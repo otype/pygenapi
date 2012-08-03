@@ -1,0 +1,8 @@
+.idea/
+*.iml
+*.swp
+build/
+dist/
+*.pyc
+.DS_Store
+misc/
