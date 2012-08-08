@@ -28,10 +28,13 @@ from tornado.options import enable_pretty_logging
 #
 ##############################################################################
 
+# Increment this version
+API_VERSION = 1
 
+# Application details
 APP_DETAILS = {
     'name': 'GenAPI v1',
-    'version': '0.1',
+    'API_version': API_VERSION,
     'company': 'apitrary',
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
@@ -47,9 +50,6 @@ APP_SETTINGS = {
     'xheaders': True
 }
 
-# Increment this version
-API_VERSION = 1
-
 ##############################################################################
 #
 # HANDLERS
@@ -58,6 +58,11 @@ API_VERSION = 1
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    """
+        The most general handler class. Should be sub-classed by all consecutive
+        handler classes.
+    """
+
     def __init__(self, application, request, **kwargs):
         """
             Base initializer! Sets up the riak (sync) client and the async http client for async Riak calls.
@@ -67,7 +72,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # Setup the Async HTTP client for calling Riak asynchronously
         self.async_http_client = tornado.httpclient.AsyncHTTPClient()
 
-        # Setup Riak URLs for AsyncHttpClient
+        # Setup Riak base URLs for AsyncHttpClient
         self.riak_protocol = 'http://'
         self.riak_url = '{protocol}{node}:{port}'.format(
             protocol=self.riak_protocol,
@@ -78,7 +83,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def write_error(self, status_code, **kwargs):
         """
-            Called automatically when an error occurred.
+            Called automatically when an error occurred. But can also be used to
+            respond back to caller with a manual error.
         """
         if kwargs.has_key('exc_info'):
             logging.error(repr(kwargs['exc_info']))
@@ -100,6 +106,9 @@ class RootWelcomeHandler(BaseHandler):
     """
 
     def get(self, *args, **kwargs):
+        """
+            Print out the welcome message. Should be available at '/'.
+        """
         self.write(
                 {'message': 'Welcome to apitrary\'s {} API v.{}!'.format(APP_DETAILS['name'], APP_DETAILS['version'])}
         )
@@ -112,6 +121,9 @@ class AppInfoHandler(BaseHandler):
     """
 
     def get(self, *args, **kwargs):
+        """
+            Print out the application details (see APP_DETAILS)
+        """
         self.write(APP_DETAILS)
 
 
@@ -124,6 +136,9 @@ class DatabaseAliveHandler(BaseHandler):
     @tornado.web.asynchronous
     @tornado.gen.engine
     def get(self, *args, **kwargs):
+        """
+            Asynchronously checks the database status by calling Riak's /ping url.
+        """
         riak_ping_url = '{}/ping'.format(self.riak_url)
         response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
         self.write({'ping': response.body})
@@ -139,6 +154,9 @@ class DatabaseStatusHandler(BaseHandler):
     @tornado.web.asynchronous
     @tornado.gen.engine
     def get(self, *args, **kwargs):
+        """
+            Asynchronously calls the Riak stats.
+        """
         riak_stats_url = '{}/stats'.format(self.riak_url)
         response = yield tornado.gen.Task(self.async_http_client.fetch, riak_stats_url)
         self.write(response.body)
@@ -147,7 +165,7 @@ class DatabaseStatusHandler(BaseHandler):
 
 class GenericKeyValueHandler(BaseHandler):
     """
-        Generic Key-/Value-pair handler
+        Generic Key-/Value-pair handler. Used for the first iteration of apitrary.
     """
     # Set of supported methods for this resource
     SUPPORTED_METHODS = ("GET", "POST", "PUT", "DELETE")
@@ -248,15 +266,15 @@ class GenericKeyValueHandler(BaseHandler):
 #
 ##############################################################################
 
-# Shell options
+# Shell options from Tornado
 define("config", default='genapi.conf', help="genapi service config file", type=str)
-define("port", default=6000, help="run on the given port", type=int)
+define("port", default=7000, help="run on the given port", type=int)
 define("env", default='dev', help='start server in test, dev or live mode', type=str)
 define("riak_host", default="localhost", help="Riak database host", type=str)
 define("riak_port", default=8098, help="Riak database port", type=int)
 define("riak_rq", default=2, help="Riak READ QUORUM", type=int)
 define("riak_wq", default=2, help="Riak WRITE QUORUM", type=int)
-define("riak_bucket_name", default='genapiv1_somerandomname', help="Riak bucket name", type=str)
+define("riak_bucket_name", default='genapi_default_bucket', help="Riak bucket name", type=str)
 
 # API version URL
 api_version_url = '/v{}'.format(API_VERSION)
@@ -308,6 +326,7 @@ def main():
         tornado.options.parse_config_file(options.config)
     else:
         tornado.options.parse_command_line()
+        print tornado.options
 
     # Setup the HTTP server
     http_server = tornado.httpserver.HTTPServer(application)
