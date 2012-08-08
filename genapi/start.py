@@ -163,10 +163,47 @@ class DatabaseStatusHandler(BaseHandler):
         self.finish()
 
 
-class GenericKeyValueHandler(BaseHandler):
+class MultipleObjectHandler(BaseHandler):
     """
-        Generic Key-/Value-pair handler. Used for the first iteration of apitrary.
+        Multiple object Key-/Value-pair handler. Used for the first iteration of apitrary.
     """
+
+    # Set of supported methods for this resource
+    SUPPORTED_METHODS = ("GET")
+
+    def __init__(self, application, request, **kwargs):
+        """
+            Sets up the Riak client and the bucket
+        """
+        super(MultipleObjectHandler, self).__init__(application, request, **kwargs)
+        bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
+        logging.debug('Setting bucket = {}'.format(bucket_name))
+
+        # Setup Riak client
+        self.client = riak.RiakClient(
+            host=options.riak_host,
+            port=options.riak_port,
+            transport_class=riak.RiakHttpTransport
+        )
+
+        # Setup the Riak bucket
+        self.bucket = self.client.bucket(bucket_name).set_r(options.riak_rq).set_w(options.riak_wq)
+
+    def get(self, page_id):
+        """
+            Retrieve blog post with given id
+        """
+        page_id = self.get_argument('page', default=1)
+        count = self.get_argument('num', default=10)
+
+        self.write({'result': 'dooh'})
+
+
+class SingleObjectHandler(BaseHandler):
+    """
+        Single object Key-/Value-pair handler. Used for the first iteration of apitrary.
+    """
+
     # Set of supported methods for this resource
     SUPPORTED_METHODS = ("GET", "POST", "PUT", "DELETE")
 
@@ -174,9 +211,9 @@ class GenericKeyValueHandler(BaseHandler):
         """
             Sets up the Riak client and the bucket
         """
-        super(GenericKeyValueHandler, self).__init__(application, request, **kwargs)
+        super(SingleObjectHandler, self).__init__(application, request, **kwargs)
         bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
-        logging.info('Setting bucket = {}'.format(bucket_name))
+        logging.debug('Setting bucket = {}'.format(bucket_name))
 
         # Setup Riak client
         self.client = riak.RiakClient(
@@ -202,7 +239,7 @@ class GenericKeyValueHandler(BaseHandler):
             Stores a new blog post into Riak
         """
         object_id = uuid.uuid1().hex
-        logging.info("created new object id: {}".format(object_id))
+        logging.debug("created new object id: {}".format(object_id))
         try:
             obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
             if obj_to_store is None:
@@ -254,7 +291,7 @@ class GenericKeyValueHandler(BaseHandler):
 
         result = object_to_store.delete()
         if result.get_data() is None:
-            logging.info("Deleted object with id: {}".format(object_id))
+            logging.debug("Deleted object with id: {}".format(object_id))
             self.set_status(200)
             self.write({"deleted": object_id})
         else:
@@ -291,9 +328,11 @@ handlers = [
     (r"{}/dbping/".format(api_version_url), DatabaseAliveHandler),
     (r"{}/dbstats".format(api_version_url), DatabaseStatusHandler),
     (r"{}/dbstats/".format(api_version_url), DatabaseStatusHandler),
-    (r"{}/object".format(api_version_url), GenericKeyValueHandler),
-    (r"{}/object/".format(api_version_url), GenericKeyValueHandler),
-    (r"{}/object/([0-9a-zA-Z]+)".format(api_version_url), GenericKeyValueHandler)
+    (r"{}/objects".format(api_version_url), MultipleObjectHandler),
+    (r"{}/objects/".format(api_version_url), MultipleObjectHandler),
+    (r"{}/object".format(api_version_url), SingleObjectHandler),
+    (r"{}/object/".format(api_version_url), SingleObjectHandler),
+    (r"{}/object/([0-9a-zA-Z]+)".format(api_version_url), SingleObjectHandler)
 ]
 
 # Start the tornado application
