@@ -6,12 +6,12 @@
     Copyright (c) 2012 apitrary
 
 """
-from datetime import datetime
 import json
 import logging
 import uuid
 import os
 import riak
+import time
 import tornado.ioloop
 import tornado.web
 from tornado import httpclient
@@ -24,21 +24,42 @@ from tornado.options import enable_pretty_logging
 
 ##############################################################################
 #
-# GENERAL CONFIGURATION
+# GENERAL CONFIGURATION + SHELL PARAMETER DEFINITIONS
 #
 ##############################################################################
 
-# Increment this version
-API_VERSION = 1
+# Shell options from Tornado
+define("config", default='genapi.conf', help="genapi service config file", type=str)
+define("port", default=7000, help="run on the given port", type=int)
+define("env", default='dev', help='start server in test, dev or live mode', type=str)
+define("riak_host", default="localhost", help="Riak database host", type=str)
+define("riak_port", default=8098, help="Riak database port", type=int)
+define("riak_rq", default=2, help="Riak READ QUORUM", type=int)
+define("riak_wq", default=2, help="Riak WRITE QUORUM", type=int)
+define("riak_bucket_name", default='genapi_default_bucket', help="Riak bucket name", type=str)
+define("api_version", default=1, help="API Version (/vXXX)", type=int)
+define("api_id", default='aaaaaaaaaa_1', help="Unique API ID", type=str)
+
+# API-specific settings
+API_VERSION = options.api_version
+API_ID = options.api_id
+
+# API version URL
+api_version_url = '/v{}'.format(API_VERSION)
+
+# Enable pretty logging
+enable_pretty_logging()
 
 # Application details
 APP_DETAILS = {
     'name': 'GenAPI v1',
-    'API_version': API_VERSION,
+    'version': '0.1',
     'company': 'apitrary',
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
-    'copyright': '2012 apitrary.com'
+    'copyright': '2012 apitrary.com',
+    'API version' : API_VERSION,
+    'id': API_ID
 }
 
 # Cookie secret
@@ -96,7 +117,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_status(status_code)
         self.write({
             'error': message,
-            'incident_time': datetime.utcnow().isoformat()
+            'incident_time': time.time()
         })
 
 
@@ -176,8 +197,8 @@ class MultipleObjectHandler(BaseHandler):
             Sets up the Riak client and the bucket
         """
         super(MultipleObjectHandler, self).__init__(application, request, **kwargs)
-        bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
-        logging.debug('Setting bucket = {}'.format(bucket_name))
+        self.bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
+        logging.debug('Setting bucket = {}'.format(self.bucket_name))
 
         # Setup Riak client
         self.client = riak.RiakClient(
@@ -187,16 +208,25 @@ class MultipleObjectHandler(BaseHandler):
         )
 
         # Setup the Riak bucket
-        self.bucket = self.client.bucket(bucket_name).set_r(options.riak_rq).set_w(options.riak_wq)
+        self.bucket = self.client.bucket(self.bucket_name).set_r(options.riak_rq).set_w(options.riak_wq)
 
-    def get(self, page_id):
+    #noinspection PyMethodOverriding
+    def get(self):
         """
             Retrieve blog post with given id
         """
-        page_id = self.get_argument('page', default=1)
-        count = self.get_argument('num', default=10)
+        start = self.get_argument('start', default=1)
+        rows = self.get_argument('rows', default=10)
+        search_query = self.client.search(self.bucket_name, 'start:[{}]'.format(start - 1))
 
-        self.write({'result': 'dooh'})
+        for result in search_query.run():
+            # Getting ``RiakLink`` objects back.
+            obj = result.get()
+            obj_data = obj.get_data()
+            print obj_data
+#            print "%s %s" % (obj_data['first_name'], obj_data['last_name'])
+
+        self.write({'rows': rows, 'page': start})
 
 
 class SingleObjectHandler(BaseHandler):
@@ -246,8 +276,8 @@ class SingleObjectHandler(BaseHandler):
                 raise tornado.web.HTTPError(403)
 
             # Check if this post is valid
-            obj_to_store['created_at'] = datetime.utcnow().toordinal()
-            obj_to_store['updated_at'] = datetime.utcnow().toordinal()
+            obj_to_store['created_at'] = time.time()
+            obj_to_store['updated_at'] = time.time()
             result = self.bucket.new(object_id, obj_to_store).store()
             self.write({"id": result._key})
         except ValueError:
@@ -299,25 +329,9 @@ class SingleObjectHandler(BaseHandler):
 
 ##############################################################################
 #
-# SHELL CONFIGURATION PARAMETERS
+# ROUTING CONFIGURATION
 #
 ##############################################################################
-
-# Shell options from Tornado
-define("config", default='genapi.conf', help="genapi service config file", type=str)
-define("port", default=7000, help="run on the given port", type=int)
-define("env", default='dev', help='start server in test, dev or live mode', type=str)
-define("riak_host", default="localhost", help="Riak database host", type=str)
-define("riak_port", default=8098, help="Riak database port", type=int)
-define("riak_rq", default=2, help="Riak READ QUORUM", type=int)
-define("riak_wq", default=2, help="Riak WRITE QUORUM", type=int)
-define("riak_bucket_name", default='genapi_default_bucket', help="Riak bucket name", type=str)
-
-# API version URL
-api_version_url = '/v{}'.format(API_VERSION)
-
-# Enable pretty logging
-enable_pretty_logging()
 
 # All routes to handle within this API
 handlers = [
@@ -365,7 +379,6 @@ def main():
         tornado.options.parse_config_file(options.config)
     else:
         tornado.options.parse_command_line()
-        print tornado.options
 
     # Setup the HTTP server
     http_server = tornado.httpserver.HTTPServer(application)
