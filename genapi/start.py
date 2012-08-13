@@ -31,12 +31,12 @@ from tornado.options import enable_pretty_logging
 # Shell options from Tornado
 define("config", default='genapi.conf', help="genapi service config file", type=str)
 define("port", default=7000, help="run on the given port", type=int)
-define("env", default='dev', help='start server in test, dev or live mode', type=str)
+#define("env", default='dev', help='start server in test, dev or live mode', type=str)
 define("riak_host", default="localhost", help="Riak database host", type=str)
 define("riak_port", default=8098, help="Riak database port", type=int)
 define("riak_rq", default=2, help="Riak READ QUORUM", type=int)
 define("riak_wq", default=2, help="Riak WRITE QUORUM", type=int)
-define("riak_bucket_name", default='genapi_default_bucket', help="Riak bucket name", type=str)
+define("riak_bucket_name", default='genapi_object', help="Riak bucket name", type=str)
 define("api_version", default=1, help="API Version (/vXXX)", type=int)
 define("api_id", default='aaaaaaaaaa_1', help="Unique API ID", type=str)
 
@@ -58,7 +58,7 @@ APP_DETAILS = {
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
     'copyright': '2012 apitrary.com',
-    'API version' : API_VERSION,
+    'API version': API_VERSION,
     'id': API_ID
 }
 
@@ -197,7 +197,8 @@ class MultipleObjectHandler(BaseHandler):
             Sets up the Riak client and the bucket
         """
         super(MultipleObjectHandler, self).__init__(application, request, **kwargs)
-        self.bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
+        #        self.bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
+        self.bucket_name = options.riak_bucket_name
         logging.debug('Setting bucket = {}'.format(self.bucket_name))
 
         # Setup Riak client
@@ -215,18 +216,26 @@ class MultipleObjectHandler(BaseHandler):
         """
             Retrieve blog post with given id
         """
-        start = self.get_argument('start', default=1)
+        start = self.get_argument('start', default=0)
         rows = self.get_argument('rows', default=10)
-        search_query = self.client.search(self.bucket_name, 'start:[{}]'.format(start - 1))
+        question = self.get_argument('q', default=None)
 
+        try:
+            logging.info('search_query question: {}'.format(question))
+            search_query = self.client.search(self.bucket_name, question)
+        except TypeError, e:
+            logging.error(e)
+            self.write_error(500, message='Error when parsing arguments!')
+            return
+
+        response = []
         for result in search_query.run():
             # Getting ``RiakLink`` objects back.
             obj = result.get()
             obj_data = obj.get_data()
-            print obj_data
-#            print "%s %s" % (obj_data['first_name'], obj_data['last_name'])
+            response.append(obj_data)
 
-        self.write({'rows': rows, 'page': start})
+        self.write({'search_result': response})
 
 
 class SingleObjectHandler(BaseHandler):
@@ -242,7 +251,8 @@ class SingleObjectHandler(BaseHandler):
             Sets up the Riak client and the bucket
         """
         super(SingleObjectHandler, self).__init__(application, request, **kwargs)
-        bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
+        #        bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
+        bucket_name = options.riak_bucket_name
         logging.debug('Setting bucket = {}'.format(bucket_name))
 
         # Setup Riak client
