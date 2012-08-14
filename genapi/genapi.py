@@ -33,7 +33,8 @@ define("config", default='genapi.conf', help="genapi service config file", type=
 define("port", default=7000, help="run on the given port", type=int)
 #define("env", default='dev', help='start server in test, dev or live mode', type=str)
 define("riak_host", default="localhost", help="Riak database host", type=str)
-define("riak_port", default=8098, help="Riak database port", type=int)
+define("riak_http_port", default=8098, help="Riak HTTP port", type=int)
+define("riak_pb_port", default=8087, help="Riak Protocol Buffer port", type=int)
 define("riak_rq", default=2, help="Riak READ QUORUM", type=int)
 define("riak_wq", default=2, help="Riak WRITE QUORUM", type=int)
 define("riak_bucket_name", default='genapi_object', help="Riak bucket name", type=str)
@@ -98,9 +99,26 @@ class BaseHandler(tornado.web.RequestHandler):
         self.riak_url = '{protocol}{node}:{port}'.format(
             protocol=self.riak_protocol,
             node=options.riak_host,
-            port=options.riak_port
+            port=options.riak_http_port
         )
 
+        # Riak HTTP client
+        self.riak_http_client = riak.RiakClient(
+            host=options.riak_host,
+            port=options.riak_http_port,
+            transport_class=riak.RiakHttpTransport
+        )
+
+        # Riak PBC client
+        #noinspection PyTypeChecker
+        self.riak_pb_client = riak.RiakClient(
+            host=options.riak_host,
+            port=options.riak_pb_port,
+            transport_class=riak.RiakPbcTransport
+        )
+
+        # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
+        self.client = self.riak_pb_client
 
     def write_error(self, status_code, **kwargs):
         """
@@ -186,6 +204,9 @@ class DatabaseStatusHandler(BaseHandler):
 
 class MultipleObjectHandler(BaseHandler):
     """
+        GET '/objects'
+        GET '/objects?q=<key>:<search_value>'
+
         Multiple object Key-/Value-pair handler. Used for the first iteration of apitrary.
     """
 
@@ -197,49 +218,59 @@ class MultipleObjectHandler(BaseHandler):
             Sets up the Riak client and the bucket
         """
         super(MultipleObjectHandler, self).__init__(application, request, **kwargs)
-        #        self.bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
         self.bucket_name = options.riak_bucket_name
         logging.debug('Setting bucket = {}'.format(self.bucket_name))
-
-        # Setup Riak client
-        self.client = riak.RiakClient(
-            host=options.riak_host,
-            port=options.riak_port,
-            transport_class=riak.RiakHttpTransport
-        )
 
         # Setup the Riak bucket
         self.bucket = self.client.bucket(self.bucket_name).set_r(options.riak_rq).set_w(options.riak_wq)
 
-    #noinspection PyMethodOverriding
-    def get(self):
-        """
-            Retrieve blog post with given id
-        """
-        start = self.get_argument('start', default=0)
-        rows = self.get_argument('rows', default=10)
-        question = self.get_argument('q', default=None)
+    def fetch_all(self):
+        query = riak.RiakMapReduce(self.client).add(self.bucket_name)
+        query.map('function(v) { var data = JSON.parse(v.values[0].data); return [[v.key, data]]; }')
+        return query.run()
 
-        try:
-            logging.info('search_query question: {}'.format(question))
-            search_query = self.client.search(self.bucket_name, question)
-        except TypeError, e:
-            logging.error(e)
-            self.write_error(500, message='Error when parsing arguments!')
-            return
-
+    def search(self, question):
+        query = self.client.search(self.bucket_name, question)
+        logging.debug('search_query: {}'.format(query))
         response = []
-        for result in search_query.run():
+        for result in query.run():
             # Getting ``RiakLink`` objects back.
             obj = result.get()
             obj_data = obj.get_data()
             response.append(obj_data)
 
-        self.write({'search_result': response})
+        return response
 
+    #noinspection PyMethodOverriding
+    def get(self):
+        """
+            Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
+            we assume the user wants to have all objects in this bucket.
+        """
+        # TODO: Add another way to limit the query results (fetch_all()[:100])
+        # TODO: Add another way to query for documents after/before a certain date
+
+        query = self.get_argument('q', default=None)
+
+        results = ''
+        try:
+            if query:
+                results = self.search(query)
+            else:
+                results = self.fetch_all()
+        except Exception, e:
+            logging.error(e)
+            self.write_error(500, message='Error on fetching all objects!')
+
+        self.write({'results' : results})
 
 class SingleObjectHandler(BaseHandler):
     """
+        GET '/object'
+        POST '/object'
+        PUT '/object'
+        DELETE '/object'
+
         Single object Key-/Value-pair handler. Used for the first iteration of apitrary.
     """
 
@@ -251,16 +282,8 @@ class SingleObjectHandler(BaseHandler):
             Sets up the Riak client and the bucket
         """
         super(SingleObjectHandler, self).__init__(application, request, **kwargs)
-        #        bucket_name = '{}_{}'.format(options.riak_bucket_name, options.env)
         bucket_name = options.riak_bucket_name
         logging.debug('Setting bucket = {}'.format(bucket_name))
-
-        # Setup Riak client
-        self.client = riak.RiakClient(
-            host=options.riak_host,
-            port=options.riak_port,
-            transport_class=riak.RiakHttpTransport
-        )
 
         # Setup the Riak bucket
         self.bucket = self.client.bucket(bucket_name).set_r(options.riak_rq).set_w(options.riak_wq)
