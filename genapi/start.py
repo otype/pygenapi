@@ -258,11 +258,11 @@ class MultipleObjectHandler(BaseHandler):
                 results = self.search(query)
             else:
                 results = self.fetch_all()
+            self.write({'results' : results})
         except Exception, e:
             logging.error(e)
             self.write_error(500, message='Error on fetching all objects!')
 
-        self.write({'results' : results})
 
 class SingleObjectHandler(BaseHandler):
     """
