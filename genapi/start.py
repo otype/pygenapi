@@ -400,6 +400,9 @@ def show_all_settings():
         Show all routes configured for this service
     """
     logging.info('SERVER PORT: {}'.format(options.port))
+    logging.info('RIAK HOST: {}'.format(options.riak_host))
+    logging.info('RIAK HTTP PORT: {}'.format(options.riak_http_port))
+    logging.info('RIAK PBC PORT: {}'.format(options.riak_pb_port))
     for route in handlers:
         logging.info('NEW ROUTE: {} -- Handled by: "{}"'.format(repr(route[0]), route[1]))
 
