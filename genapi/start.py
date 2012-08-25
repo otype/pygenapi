@@ -328,7 +328,6 @@ class SingleObjectHandler(BaseHandler):
 
         # First, try to get the object (check if it exists)
         db_object = self.bucket.get(object_id).get_data()
-        logging.info(db_object)
 
         if db_object is None:
             self.write_error(500, message='Cannot update object: object with given id does not exist!')
