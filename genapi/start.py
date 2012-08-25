@@ -326,6 +326,14 @@ class SingleObjectHandler(BaseHandler):
         if object_id is None:
             raise tornado.web.HTTPError(403, log_message="Missing object id")
 
+        # First, try to get the object (check if it exists)
+        db_object = self.bucket.get(object_id).get_data()
+        logging.info(db_object)
+
+        if db_object is None:
+            self.write_error(500, message='Cannot update object: object with given id does not exist!')
+            return
+
         try:
             obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
             if obj_to_store is None:
