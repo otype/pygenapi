@@ -118,7 +118,7 @@ class BaseHandler(tornado.web.RequestHandler):
         )
 
         # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
-#        self.client = self.riak_pb_client
+        #        self.client = self.riak_pb_client
         self.client = self.riak_http_client
 
     def write_error(self, status_code, **kwargs):
@@ -185,24 +185,6 @@ class DatabaseAliveHandler(BaseHandler):
         self.finish()
 
 
-class DatabaseStatusHandler(BaseHandler):
-    """
-        GET '/dbstats'
-        GET '/dbstats/'
-    """
-
-    @tornado.web.asynchronous
-    @tornado.gen.engine
-    def get(self, *args, **kwargs):
-        """
-            Asynchronously calls the Riak stats.
-        """
-        riak_stats_url = '{}/stats'.format(self.riak_url)
-        response = yield tornado.gen.Task(self.async_http_client.fetch, riak_stats_url)
-        self.write(response.body)
-        self.finish()
-
-
 class MultipleObjectHandler(BaseHandler):
     """
         GET '/objects'
@@ -259,7 +241,7 @@ class MultipleObjectHandler(BaseHandler):
                 results = self.search(query)
             else:
                 results = self.fetch_all()
-            self.write({'results' : results})
+            self.write({'results': results})
         except Exception, e:
             logging.error(e)
             self.write_error(500, message='Error on fetching all objects!')
@@ -381,8 +363,6 @@ handlers = [
     (r"{}/info/".format(api_version_url), AppInfoHandler),
     (r"{}/dbping".format(api_version_url), DatabaseAliveHandler),
     (r"{}/dbping/".format(api_version_url), DatabaseAliveHandler),
-    (r"{}/dbstats".format(api_version_url), DatabaseStatusHandler),
-    (r"{}/dbstats/".format(api_version_url), DatabaseStatusHandler),
     (r"{}/objects".format(api_version_url), MultipleObjectHandler),
     (r"{}/objects/".format(api_version_url), MultipleObjectHandler),
     (r"{}/object".format(api_version_url), SingleObjectHandler),
