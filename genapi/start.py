@@ -292,8 +292,8 @@ class SingleObjectHandler(BaseHandler):
                 raise tornado.web.HTTPError(403)
 
             # Check if this post is valid
-            obj_to_store['created_at'] = time.time()
-            obj_to_store['updated_at'] = time.time()
+            obj_to_store['createdAt'] = time.time()
+            obj_to_store['updatedAt'] = time.time()
             result = self.bucket.new(object_id, obj_to_store).store()
             self.set_status(201)
             self.write({"id": result._key})
