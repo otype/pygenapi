@@ -210,6 +210,13 @@ class MultipleObjectHandler(BaseHandler):
     def fetch_all(self):
         query = riak.RiakMapReduce(self.client).add(self.bucket_name)
         query.map('function(v) { var data = JSON.parse(v.values[0].data); return [[v.key, data]]; }')
+        query.reduce('''function(v) {
+                var result = {};
+                for(val in v) {
+                    result[v[val][0]] = v[val][1];
+                }
+                return [result];
+            }''')
         return query.run()
 
     def search(self, question):
@@ -220,7 +227,8 @@ class MultipleObjectHandler(BaseHandler):
             # Getting ``RiakLink`` objects back.
             obj = result.get()
             obj_data = obj.get_data()
-            response.append(obj_data)
+            kv_object = { result._key : obj_data }
+            response.append(kv_object)
 
         return response
 
