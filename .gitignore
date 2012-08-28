@@ -18,6 +18,7 @@
 # Intellij
 .idea/
 *.iml
+out/
 
 # Mac
 .DS_Store
