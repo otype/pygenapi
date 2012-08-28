@@ -211,11 +211,14 @@ class MultipleObjectHandler(BaseHandler):
         query = riak.RiakMapReduce(self.client).add(self.bucket_name)
         query.map('function(v) { var data = JSON.parse(v.values[0].data); return [[v.key, data]]; }')
         query.reduce('''function(v) {
-                var result = {};
+                var result = [];
                 for(val in v) {
-                    result[v[val][0]] = v[val][1];
+                    temp_res = {};
+                    temp_res['_id'] = v[val][0];
+                    temp_res['_data'] = v[val][1];
+                    result.push(temp_res);
                 }
-                return [result];
+                return result;
             }''')
         return query.run()
 
@@ -227,7 +230,7 @@ class MultipleObjectHandler(BaseHandler):
             # Getting ``RiakLink`` objects back.
             obj = result.get()
             obj_data = obj.get_data()
-            kv_object = { result._key : obj_data }
+            kv_object = { '_id' : result._key, '_data' : obj_data }
             response.append(kv_object)
 
         return response
