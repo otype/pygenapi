@@ -78,6 +78,7 @@ def setup_indexing(opts, entity_name):
 
         # check if the props have the precommit hook
         json_object = json.loads(resp.body)
+        logging.debug(json_object)
         if not len(json_object['props']['precommit'][0]):
             # They don't! Ok, then PUT the precommit hook
             logging.debug("Setting up index hook")
