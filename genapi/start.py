@@ -6,21 +6,19 @@
     Copyright (c) 2012 apitrary
 
 """
-import json
 import logging
-import uuid
 import os
-import riak
-import time
 import tornado.ioloop
 import tornado.web
-from tornado import httpclient
-from tornado import gen
 import tornado.httpserver
 import tornado.httputil
 from tornado.options import options
 from tornado.options import define
 from tornado.options import enable_pretty_logging
+from base_handlers import AppStatusHandler, RootWelcomeHandler
+from config import APP_SETTINGS
+from entity_handlers import MultipleObjectHandler, SingleObjectHandler
+
 
 ##############################################################################
 #
@@ -46,321 +44,10 @@ API_VERSION = options.api_version
 API_ID = options.api_id
 
 # API version URL
-api_version_url = '/v{}'.format(API_VERSION)
+API_VERSION_URL = '/v{}'.format(API_VERSION)
 
 # Enable pretty logging
 enable_pretty_logging()
-
-# Application details
-APP_DETAILS = {
-    'name': 'GenAPI v1',
-    'version': '0.1',
-    'company': 'apitrary',
-    'support': 'http://apitrary.com/support',
-    'contact': 'support@apitrary.com',
-    'copyright': '2012 apitrary.com',
-    'API version': API_VERSION,
-    'id': API_ID
-}
-
-# Cookie secret
-COOKIE_SECRET = 'Pa1eevenie-di4koGheiKe7ki_inoo2quiu0Xohhaquei4thuv'
-
-# General app settings for Tornado
-APP_SETTINGS = {
-    'cookie_secret': COOKIE_SECRET,
-    'xheaders': True
-}
-
-##############################################################################
-#
-# HANDLERS
-#
-##############################################################################
-
-
-class BaseHandler(tornado.web.RequestHandler):
-    """
-        The most general handler class. Should be sub-classed by all consecutive
-        handler classes.
-    """
-
-    def __init__(self, application, request, **kwargs):
-        """
-            Base initializer! Sets up the riak (sync) client and the async http client for async Riak calls.
-        """
-        super(BaseHandler, self).__init__(application, request, **kwargs)
-
-        # Setup the Async HTTP client for calling Riak asynchronously
-        self.async_http_client = tornado.httpclient.AsyncHTTPClient()
-
-        # Setup Riak base URLs for AsyncHttpClient
-        self.riak_protocol = 'http://'
-        self.riak_url = '{protocol}{node}:{port}'.format(
-            protocol=self.riak_protocol,
-            node=options.riak_host,
-            port=options.riak_http_port
-        )
-
-        # Riak HTTP client
-        self.riak_http_client = riak.RiakClient(
-            host=options.riak_host,
-            port=options.riak_http_port,
-            transport_class=riak.RiakHttpTransport
-        )
-
-        # Riak PBC client
-        #noinspection PyTypeChecker
-        self.riak_pb_client = riak.RiakClient(
-            host=options.riak_host,
-            port=options.riak_pb_port,
-            transport_class=riak.RiakPbcTransport
-        )
-
-        # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
-        #        self.client = self.riak_pb_client
-        self.client = self.riak_http_client
-
-    def write_error(self, status_code, **kwargs):
-        """
-            Called automatically when an error occurred. But can also be used to
-            respond back to caller with a manual error.
-        """
-        if kwargs.has_key('exc_info'):
-            logging.error(repr(kwargs['exc_info']))
-
-        message = 'Something went seriously wrong! Maybe invalid resource? Ask your admin for advice!'
-        if kwargs.has_key('message'):
-            message = kwargs['message']
-
-        self.set_status(status_code)
-        self.write({
-            'error': message,
-            'incident_time': time.time()
-        })
-
-
-class RootWelcomeHandler(BaseHandler):
-    """
-        GET '/'
-    """
-
-    def get(self, *args, **kwargs):
-        """
-            Print out the welcome message. Should be available at '/'.
-        """
-        self.write(
-                {'message': 'Welcome to apitrary\'s {} API v.{}!'.format(APP_DETAILS['name'], APP_DETAILS['version'])}
-        )
-
-
-class AppInfoHandler(BaseHandler):
-    """
-        GET '/info'
-        GET '/info/'
-    """
-
-    def get(self, *args, **kwargs):
-        """
-            Print out the application details (see APP_DETAILS)
-        """
-        self.write(APP_DETAILS)
-
-
-class DatabaseAliveHandler(BaseHandler):
-    """
-        GET '/dbping'
-        GET '/dbping/'
-    """
-
-    @tornado.web.asynchronous
-    @tornado.gen.engine
-    def get(self, *args, **kwargs):
-        """
-            Asynchronously checks the database status by calling Riak's /ping url.
-        """
-        riak_ping_url = '{}/ping'.format(self.riak_url)
-        response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
-        self.write({'ping': response.body})
-        self.finish()
-
-
-class MultipleObjectHandler(BaseHandler):
-    """
-        GET '/objects'
-        GET '/objects?q=<key>:<search_value>'
-
-        Multiple object Key-/Value-pair handler. Used for the first iteration of apitrary.
-    """
-
-    # Set of supported methods for this resource
-    SUPPORTED_METHODS = ("GET")
-
-    def __init__(self, application, request, **kwargs):
-        """
-            Sets up the Riak client and the bucket
-        """
-        super(MultipleObjectHandler, self).__init__(application, request, **kwargs)
-        self.bucket_name = options.riak_bucket_name
-        logging.debug('Setting bucket = {}'.format(self.bucket_name))
-
-        # Setup the Riak bucket
-        self.bucket = self.client.bucket(self.bucket_name).set_r(options.riak_rq).set_w(options.riak_wq)
-
-    def fetch_all(self):
-        query = riak.RiakMapReduce(self.client).add(self.bucket_name)
-        query.map('function(v) { var data = JSON.parse(v.values[0].data); return [[v.key, data]]; }')
-        query.reduce('''function(v) {
-                var result = [];
-                for(val in v) {
-                    temp_res = {};
-                    temp_res['_id'] = v[val][0];
-                    temp_res['_data'] = v[val][1];
-                    result.push(temp_res);
-                }
-                return result;
-            }''')
-        return query.run()
-
-    def search(self, question):
-        query = self.client.search(self.bucket_name, question)
-        logging.debug('search_query: {}'.format(query))
-        response = []
-        for result in query.run():
-            # Getting ``RiakLink`` objects back.
-            obj = result.get()
-            obj_data = obj.get_data()
-            kv_object = { '_id' : result._key, '_data' : obj_data }
-            response.append(kv_object)
-
-        return response
-
-    #noinspection PyMethodOverriding
-    def get(self):
-        """
-            Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
-            we assume the user wants to have all objects in this bucket.
-        """
-        # TODO: Add another way to limit the query results (fetch_all()[:100])
-        # TODO: Add another way to query for documents after/before a certain date
-
-        query = self.get_argument('q', default=None)
-
-        results = ''
-        try:
-            if query:
-                results = self.search(query)
-            else:
-                results = self.fetch_all()
-            self.write({'results': results})
-        except Exception, e:
-            logging.error(e)
-            self.write_error(500, message='Error on fetching all objects!')
-
-
-class SingleObjectHandler(BaseHandler):
-    """
-        GET '/object'
-        POST '/object'
-        PUT '/object'
-        DELETE '/object'
-
-        Single object Key-/Value-pair handler. Used for the first iteration of apitrary.
-    """
-
-    # Set of supported methods for this resource
-    SUPPORTED_METHODS = ("GET", "POST", "PUT", "DELETE")
-
-    def __init__(self, application, request, **kwargs):
-        """
-            Sets up the Riak client and the bucket
-        """
-        super(SingleObjectHandler, self).__init__(application, request, **kwargs)
-        bucket_name = options.riak_bucket_name
-        logging.debug('Setting bucket = {}'.format(bucket_name))
-
-        # Setup the Riak bucket
-        self.bucket = self.client.bucket(bucket_name).set_r(options.riak_rq).set_w(options.riak_wq)
-
-    def get(self, object_id):
-        """
-            Retrieve blog post with given id
-        """
-        if object_id is None:
-            raise tornado.web.HTTPError(403)
-
-        self.write(self.bucket.get(object_id).get_data())
-
-    def post(self, *args, **kwargs):
-        """
-            Stores a new blog post into Riak
-        """
-        object_id = uuid.uuid1().hex
-        logging.debug("created new object id: {}".format(object_id))
-        try:
-            obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
-            if obj_to_store is None:
-                raise tornado.web.HTTPError(403)
-
-            # Check if this post is valid
-            obj_to_store['createdAt'] = time.time()
-            obj_to_store['updatedAt'] = time.time()
-            result = self.bucket.new(object_id, obj_to_store).store()
-            self.set_status(201)
-            self.write({"id": result._key})
-        except ValueError:
-            self.write_error(500, message='Cannot store object!')
-        except Exception, e:
-            self.write_error(500, message=e.value)
-
-    def put(self, object_id=None):
-        """
-            Stores a new blog post into Riak
-        """
-        if object_id is None:
-            raise tornado.web.HTTPError(403, log_message="Missing object id")
-
-        # First, try to get the object (check if it exists)
-        db_object = self.bucket.get(object_id).get_data()
-
-        if db_object is None:
-            self.write_error(500, message='Cannot update object: object with given id does not exist!')
-            return
-
-        try:
-            obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
-            if obj_to_store is None:
-                raise tornado.web.HTTPError(
-                    403,
-                    log_message='Updating object with id: {} not possible.'.format(object_id)
-                )
-
-            # Check if this post is valid
-            updated_object = self.bucket.new(object_id, data=obj_to_store).store()
-            self.write({"id": updated_object._key})
-        except ValueError:
-            self.write_error(500, message='Cannot store object!')
-        except Exception, e:
-            self.write_error(500, message=e.value)
-
-    def delete(self, object_id=None):
-        """
-            Stores a new blog post into Riak
-        """
-        if object_id is None:
-            raise tornado.web.HTTPError(403, log_message="Missing object id")
-
-        object_to_store = self.bucket.get(object_id)
-        if object_to_store.get_data() is None:
-            raise tornado.web.HTTPError(403, log_message='Object with id: {} does not exist.'.format(object_id))
-
-        result = object_to_store.delete()
-        if result.get_data() is None:
-            logging.debug("Deleted object with id: {}".format(object_id))
-            self.set_status(200)
-            self.write({"deleted": object_id})
-        else:
-            raise tornado.web.HTTPError(403, log_message='Could not delete object with id: {}'.format(object_id))
 
 ##############################################################################
 #
@@ -369,22 +56,18 @@ class SingleObjectHandler(BaseHandler):
 ##############################################################################
 
 # All routes to handle within this API
-handlers = [
-    (r"{}/".format(api_version_url), RootWelcomeHandler),
-    (r"{}/info".format(api_version_url), AppInfoHandler),
-    (r"{}/info/".format(api_version_url), AppInfoHandler),
-    (r"{}/dbping".format(api_version_url), DatabaseAliveHandler),
-    (r"{}/dbping/".format(api_version_url), DatabaseAliveHandler),
-    (r"{}/objects".format(api_version_url), MultipleObjectHandler),
-    (r"{}/objects/".format(api_version_url), MultipleObjectHandler),
-    (r"{}/object".format(api_version_url), SingleObjectHandler),
-    (r"{}/object/".format(api_version_url), SingleObjectHandler),
-    (r"{}/object/([0-9a-zA-Z]+)".format(api_version_url), SingleObjectHandler)
+ROUTES = [
+    (r"/", RootWelcomeHandler),
+    (r"/info", RootWelcomeHandler),
+    (r"/status", AppStatusHandler, dict(api_version=API_VERSION)),
+    (r"{}/objects".format(API_VERSION_URL), MultipleObjectHandler),
+    (r"{}/object".format(API_VERSION_URL), SingleObjectHandler),
+    (r"{}/object/([0-9a-zA-Z]+)".format(API_VERSION_URL), SingleObjectHandler)
 ]
 
 # Start the tornado application
 application = tornado.web.Application(
-    handlers=handlers,
+    handlers=ROUTES,
     **APP_SETTINGS
 )
 
@@ -402,7 +85,7 @@ def show_all_settings():
     logging.info('RIAK HOST: {}'.format(options.riak_host))
     logging.info('RIAK HTTP PORT: {}'.format(options.riak_http_port))
     logging.info('RIAK PBC PORT: {}'.format(options.riak_pb_port))
-    for route in handlers:
+    for route in ROUTES:
         logging.info('NEW ROUTE: {} -- Handled by: "{}"'.format(repr(route[0]), route[1]))
 
 

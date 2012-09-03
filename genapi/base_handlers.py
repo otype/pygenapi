@@ -1,0 +1,116 @@
+# -*- coding: utf-8 -*-
+"""
+
+    GenAPI
+
+    Copyright (c) 2012 apitrary
+
+"""
+import logging
+import riak
+import time
+import tornado.ioloop
+import tornado.web
+from tornado import httpclient
+from tornado import gen
+import tornado.httpserver
+import tornado.httputil
+from tornado.options import options
+from config import APP_DETAILS
+
+
+class BaseHandler(tornado.web.RequestHandler):
+    """
+        The most general handler class. Should be sub-classed by all consecutive
+        handler classes.
+    """
+
+    def __init__(self, application, request, **kwargs):
+        """
+            Base initializer! Sets up the riak (sync) client and the async http client for async Riak calls.
+        """
+        super(BaseHandler, self).__init__(application, request, **kwargs)
+
+        # Setup the Async HTTP client for calling Riak asynchronously
+        self.async_http_client = tornado.httpclient.AsyncHTTPClient()
+
+        # Setup Riak base URLs for AsyncHttpClient
+        self.riak_protocol = 'http://'
+        self.riak_url = '{protocol}{node}:{port}'.format(
+            protocol=self.riak_protocol,
+            node=options.riak_host,
+            port=options.riak_http_port
+        )
+
+        # Riak HTTP client
+        self.riak_http_client = riak.RiakClient(
+            host=options.riak_host,
+            port=options.riak_http_port,
+            transport_class=riak.RiakHttpTransport
+        )
+
+        # Riak PBC client
+        #noinspection PyTypeChecker
+        self.riak_pb_client = riak.RiakClient(
+            host=options.riak_host,
+            port=options.riak_pb_port,
+            transport_class=riak.RiakPbcTransport
+        )
+
+        # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
+        #        self.client = self.riak_pb_client
+        self.client = self.riak_http_client
+
+    def write_error(self, status_code, **kwargs):
+        """
+            Called automatically when an error occurred. But can also be used to
+            respond back to caller with a manual error.
+        """
+        if kwargs.has_key('exc_info'):
+            logging.error(repr(kwargs['exc_info']))
+
+        message = 'Something went seriously wrong! Maybe invalid resource? Ask your admin for advice!'
+        if kwargs.has_key('message'):
+            message = kwargs['message']
+
+        self.set_status(status_code)
+        self.write({
+            'error': message,
+            'incident_time': time.time()
+        })
+
+
+class RootWelcomeHandler(BaseHandler):
+    """
+        GET '/'
+    """
+
+    def get(self, *args, **kwargs):
+        """
+            Print out the application details (see APP_DETAILS)
+        """
+        self.write(APP_DETAILS)
+
+
+class AppStatusHandler(BaseHandler):
+    """
+        GET '/info'
+        GET '/info/'
+    """
+
+    def __init__(self, application, request, api_version=None, **kwargs):
+        super(AppStatusHandler, self).__init__(application, request, **kwargs)
+        self.api_version = api_version
+
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def get(self, *args, **kwargs):
+        """
+            Asynchronously checks the database status by calling Riak's /ping url.
+        """
+        riak_ping_url = '{}/ping'.format(self.riak_url)
+        response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
+        riak_db_status = response.body
+
+        self.write({'db_status': riak_db_status, 'api_version': self.api_version})
+        self.finish()
