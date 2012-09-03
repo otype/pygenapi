@@ -79,10 +79,12 @@ def setup_indexing(opts, entity_name):
         # check if the props have the precommit hook
         json_object = json.loads(resp.body)
         logging.debug(json_object)
-        if json_object['props']['precommit'] and len(json_object['props']['precommit']) < 1:
+        if len(json_object['props']['precommit']) < 1:
             # They don't! Ok, then PUT the precommit hook
-            logging.debug("Setting up index hook")
+            logging.debug("Setting up precommit hook for indexing.")
             http_client.fetch(riak_url, method='PUT', headers=header, body=body)
+        else:
+            logging.debug('Skipping setup of precommit hook for indexing.')
     except tornado.httpclient.HTTPError, e:
         logging.error(e)
         sys.exit(e)
