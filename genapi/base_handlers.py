@@ -35,6 +35,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.async_http_client = tornado.httpclient.AsyncHTTPClient()
 
         # Setup Riak base URLs for AsyncHttpClient
+        # TODO: Make this configurable from outside the PyGenAPI!
         self.riak_protocol = 'http://'
         self.riak_url = '{protocol}{node}:{port}'.format(
             protocol=self.riak_protocol,
@@ -58,8 +59,8 @@ class BaseHandler(tornado.web.RequestHandler):
         )
 
         # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
-        #        self.client = self.riak_pb_client
-        self.client = self.riak_http_client
+        self.client = self.riak_pb_client
+#        self.client = self.riak_http_client
 
     def write_error(self, status_code, **kwargs):
         """
@@ -98,7 +99,7 @@ class AppStatusHandler(BaseHandler):
         GET '/info/'
     """
 
-    def __init__(self, application, request, api_version=None, **kwargs):
+    def __init__(self, application, request, api_version, **kwargs):
         super(AppStatusHandler, self).__init__(application, request, **kwargs)
         self.api_version = api_version
 
@@ -114,3 +115,20 @@ class AppStatusHandler(BaseHandler):
 
         self.write({'db_status': riak_db_status, 'api_version': self.api_version})
         self.finish()
+
+
+class SchemaHandler(BaseHandler):
+    """
+        GET '/'
+    """
+
+    def __init__(self, application, request, schema, **kwargs):
+        super(SchemaHandler, self).__init__(application, request, **kwargs)
+        self.schema = schema
+
+
+    def get(self, *args, **kwargs):
+        """
+            Print out all entities for which we have created end points
+        """
+        self.write({"schema": self.schema})

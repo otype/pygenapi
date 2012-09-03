@@ -1,3 +1,4 @@
 #!/bin/bash
 
-python genapi/start.py $*
+CWD=`dirname $0`
+python $CWD/genapi/start.py $*
