@@ -1,3 +1,4 @@
 riak
 tornado
 pycurl
+requests

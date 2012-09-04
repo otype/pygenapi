@@ -8,12 +8,10 @@
 """
 import json
 import logging
-import urllib
 import riak
-import sys
 import tornado
 from tornado.httpclient import AsyncHTTPClient
-from Helpers import get_bucket_name
+from Helpers import get_bucket_name, database_bucket_url
 
 def store_init_object(opts, entity_name):
     assert opts.riak_host
@@ -40,54 +38,95 @@ def store_init_object(opts, entity_name):
     bucket.new('_init', init_object).store()
 
 
-def setup_indexing(opts, entity_name):
+def curl_http_client():
     """
-        This one is a bit complicated:
-            1. Setup the Riak URL we need (e.g. http://localhost:8098/riak/<bucket_name>
-            2. Fetch the props from this bucket
-            3. Check if we already have the INDEX SOLR precommit hook set
-                NO: Run a PUT request with the necessary precommit hook
-                YES: Skip the PUT request
+        Configure HTTPClient to use curl_httpclient. Though, this requires pycurl.
     """
-    # Ok, now setup the indexing by posting the magic json object!
-    riak_protocol = 'http://'
-    riak_base_url = '{protocol}{node}:{port}'.format(
-        protocol=riak_protocol,
-        node=opts.riak_host,
-        port=opts.riak_http_port
+    AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+    return tornado.httpclient.HTTPClient()
+
+
+def precommit_hook_exists(riak_bucket_url):
+    """
+        Asks Riak on given bucket URL for the properties; will check in the
+        properties if the precommit hook for SOLR indexing has been set.
+
+        Check basho's documentation for more information:
+        http://wiki.basho.com/Riak-Search---Indexing-and-Querying-Riak-KV-Data.html#Setting-up-Indexing
+    """
+    # We're assuming, as default, that the hook has not been installed
+    hook_exists = False
+
+    # contact Riak and fetch the props
+    resp = curl_http_client().fetch(
+        riak_bucket_url,
+        method='GET',
+        headers={'content-type': 'application/json', 'accept': 'application/json'}
     )
 
-    # Construct the bucket url, e.g. http://localhost:8098/riak/<bucket_name>
+    # convert the response to json
+    json_object = json.loads(resp.body)
+    logging.debug(json_object)
+    if json_object['props']:
+        if json_object['props']['precommit']:
+            for hook in json_object['props']['precommit']:
+                # Check for {'mod': 'riak_search_kv_hook', 'fun': 'precommit'}
+                if hook['mod']:
+                    if hook['mod'] == 'riak_search_kv_hook':
+                        logging.debug("Precommit hook 'riak_search_kv_hook' already exists!")
+                        hook_exists = True
+
+    return hook_exists
+
+
+def precommit_hook():
+    """
+        Send this hash to Riak to establish the SOLR indexing.
+
+        Check basho's documentation for more information:
+        http://wiki.basho.com/Riak-Search---Indexing-and-Querying-Riak-KV-Data.html#Setting-up-Indexing
+
+        The hash has to be a single string, otherwise the http client will mess up things.
+    """
+    return '{"props": {"precommit": [{"mod": "riak_search_kv_hook", "fun": "precommit"}]}}'
+
+
+def send_precommit_hook(riak_bucket_url):
+    """
+        Sends the actual PUT request for establishing the precommit hook.
+
+        Check basho's documentation for more information:
+        http://wiki.basho.com/Riak-Search---Indexing-and-Querying-Riak-KV-Data.html#Setting-up-Indexing
+    """
+    logging.debug("Setting up precommit hook for indexing.")
+    curl_http_client().fetch(
+        riak_bucket_url,
+        method='PUT',
+        headers={'content-type': 'application/json', 'accept': 'application/json'},
+        body=precommit_hook()
+    )
+
+
+def setup_indexing(opts, entity_name):
+    """
+        This will setup the PRECOMMIT hook for indexing (SOLR) in Riak
+        for a given entity.
+    """
+    # Construct the bucket name
     bucket_name = get_bucket_name(opts.api_id, entity_name)
-    riak_url = "{}/riak/{}".format(riak_base_url, bucket_name)
-    logging.debug("INDEXING INIT: {}".format(riak_url))
 
-    # Following is taken from basho's documentation:
-    # http://wiki.basho.com/Riak-Search---Indexing-and-Querying-Riak-KV-Data.html#Setting-up-Indexing
-    body_data = {'props': {'precommit': [{'mod': 'riak_search_kv_hook', 'fun': 'precommit'}]}}
-    body = urllib.urlencode(body_data)
-    header = {'content-type': 'application/json', 'accept':'application/json'}
+    # and now, the complete Riak bucket URL
+    riak_bucket_url = database_bucket_url(db_host=opts.riak_host, db_port=opts.riak_http_port, bucket_name=bucket_name)
 
-    # Now, send the data as POST request to the bucket via tornado's HTTP client
-    AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
-    http_client = tornado.httpclient.HTTPClient()
+    # Ask if the hook is already setup
+    hook = precommit_hook_exists(riak_bucket_url=riak_bucket_url)
 
-    try:
-        # Get the current props
-        resp = http_client.fetch(riak_url, method='GET', headers=header)
-
-        # check if the props have the precommit hook
-        json_object = json.loads(resp.body)
-        logging.debug(json_object)
-        if len(json_object['props']['precommit']) < 1:
-            # They don't! Ok, then PUT the precommit hook
-            logging.debug("Setting up precommit hook for indexing.")
-            http_client.fetch(riak_url, method='PUT', headers=header, body=body)
-        else:
-            logging.debug('Skipping setup of precommit hook for indexing.')
-    except tornado.httpclient.HTTPError, e:
-        logging.error(e)
-        sys.exit(e)
+    # If it's not, then setup the hook
+    if not hook:
+        logging.debug("Precommit hook not established! Trying to set it up!")
+        send_precommit_hook(riak_bucket_url=riak_bucket_url)
+    else:
+        logging.debug('Hook already initialized! Skipping hook setup.')
 
 
 def initialize_buckets(opts):
