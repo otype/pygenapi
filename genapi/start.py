@@ -75,9 +75,9 @@ def routes(parsed_opts):
     base_url = parsed_opts.api_id
 
     all_routes = [
-        (r"/{}/".format(base_url), RootWelcomeHandler),
-        (r"/{}/info".format(base_url), RootWelcomeHandler),
-        (r"/{}/status".format(base_url), AppStatusHandler, dict(api_version=parsed_opts.api_version)),
+        (r"/", RootWelcomeHandler),
+        (r"/info", RootWelcomeHandler),
+        (r"/status", AppStatusHandler, dict(api_version=parsed_opts.api_version, api_id=parsed_opts.api_id)),
         (r"/{}/v{}/schema".format(base_url, parsed_opts.api_version), SchemaHandler, dict(schema=parsed_opts.entity))
     ]
 
