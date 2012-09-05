@@ -23,7 +23,7 @@ import tornado.httpserver
 import tornado.httputil
 from analytics import send_analytics_data
 from base_handlers import BaseHandler
-from entity_handlers_helpers import get_single_object, search, fetch_all, illegal_attributes_exist
+from entity_handlers_helpers import get_single_object, search, fetch_all, illegal_attributes_exist, filter_out_timestamps
 
 class SimpleEntityHandler(BaseHandler):
     """
@@ -149,6 +149,10 @@ class SimpleEntityHandler(BaseHandler):
                     log_message='Updating object with id: {} not possible.'.format(object_id)
                 )
 
+            # Filter out '_createdAt' and '_updatedAt'
+            obj_to_store, created_at, updated_at = filter_out_timestamps(obj_to_store)
+
+            # Check if keys exist with illegally starting characters
             if illegal_attributes_exist(obj_to_store):
                 self.write_error(
                     400,
@@ -156,9 +160,8 @@ class SimpleEntityHandler(BaseHandler):
                 )
                 return
 
-            # TODO: Currently, a PUT will overwrite the existing object ... therefore, we always have a new _createdAt. Fix this!
             # update time stamp
-            obj_to_store['_createdAt'] = time.time()
+            obj_to_store['_createdAt'] = created_at
             obj_to_store['_updatedAt'] = time.time()
 
             # Check if this post is valid
