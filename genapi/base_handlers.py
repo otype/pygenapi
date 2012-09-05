@@ -99,9 +99,10 @@ class AppStatusHandler(BaseHandler):
         GET '/info/'
     """
 
-    def __init__(self, application, request, api_version, **kwargs):
+    def __init__(self, application, request, api_version, api_id, **kwargs):
         super(AppStatusHandler, self).__init__(application, request, **kwargs)
         self.api_version = api_version
+        self.api_id = api_id
 
     @tornado.web.asynchronous
     @tornado.gen.engine
@@ -113,7 +114,12 @@ class AppStatusHandler(BaseHandler):
         response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
         riak_db_status = response.body
 
-        self.write({'db_status': riak_db_status, 'api_version': self.api_version})
+        self.write({
+                'db_status': riak_db_status,
+                'api_version': self.api_version,
+                'api_id': self.api_id
+            }
+        )
         self.finish()
 
 
