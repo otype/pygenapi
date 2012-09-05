@@ -89,9 +89,10 @@ class SimpleEntityHandler(BaseHandler):
                 results = search(self.client, self.bucket_name, query)
             else:
                 results = fetch_all(self.client, self.bucket_name)
+
             self.write({'results': results})
         except Exception, e:
-            logging.error(e)
+            logging.error("Maybe too quick here? Error: {}".format(e))
             self.write_error(500, message='Error on fetching all objects!')
 
 
@@ -163,11 +164,11 @@ class SimpleEntityHandler(BaseHandler):
         if object_id is None:
             raise tornado.web.HTTPError(400, log_message="Missing object id")
 
-        object_to_store = self.bucket.get(object_id)
-        if object_to_store.get_data() is None:
+        db_obj = self.bucket.get(object_id)
+        if db_obj.get_data() is None:
             raise tornado.web.HTTPError(410, log_message='Object with id: {} does not exist.'.format(object_id))
 
-        result = object_to_store.delete()
+        result = db_obj.delete()
         if result.get_data() is None:
             logging.debug("Deleted object with id: {}".format(object_id))
             self.set_status(200)
