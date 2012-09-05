@@ -6,8 +6,28 @@
     Copyright (c) 2012 apitrary
 
 """
+import json
 import logging
 import riak
+from config import ILLEGAL_CHARACTER_SET
+
+def illegal_attributes_exist(obj):
+    """
+        Check a given JSON object (or something that looks like a JSON string)
+        for illegal keys, e.g. starting with '_'. If such illegal keys have been
+        found, we report back immediately so that this object should be blocked.
+    """
+    if type(obj) == str:
+        obj = json.loads(obj)
+    elif type(obj) == unicode:
+        obj = json.loads(obj)
+
+    if type(obj) == dict:
+        for key in obj.viewkeys():
+            for illegal_character in ILLEGAL_CHARACTER_SET:
+                if key.startswith(illegal_character):
+                    return True
+    return False
 
 def fetch_all(client, bucket_name):
     """

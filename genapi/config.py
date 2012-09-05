@@ -30,3 +30,6 @@ GOOGLE_ANALYTICS = {
     'dev_account_id' : "UA-28942332-7",         # TEST ENVIRONMENT GA
     'live_account_id' : "UA-28942332-3"         # LIVE ENVIRONMENT GA
 }
+
+ILLEGAL_ATTRIBUTES_SET = ['_createdAt', '_updatedAt', '_init']
+ILLEGAL_CHARACTER_SET = ['_']

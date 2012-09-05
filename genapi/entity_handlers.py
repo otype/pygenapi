@@ -23,7 +23,7 @@ import tornado.httpserver
 import tornado.httputil
 from analytics import send_analytics_data
 from base_handlers import BaseHandler
-from entity_handlers_helpers import get_single_object, search, fetch_all
+from entity_handlers_helpers import get_single_object, search, fetch_all, illegal_attributes_exist
 
 class SimpleEntityHandler(BaseHandler):
     """
@@ -79,7 +79,6 @@ class SimpleEntityHandler(BaseHandler):
 
         if object_id:
             self.write(get_single_object(self.bucket, object_id))
-            self.finish()
             return
 
         # No object id? Ok, we'll continue with search/fetch_all
@@ -107,6 +106,13 @@ class SimpleEntityHandler(BaseHandler):
             if obj_to_store is None:
                 raise tornado.web.HTTPError(400)
 
+            if illegal_attributes_exist(obj_to_store):
+                self.write_error(
+                    400,
+                    message='Object contains keys starting with illegal characters, e.g. an underscore.'
+                )
+                return
+
             # add time stamps
             obj_to_store['_createdAt'] = time.time()
             obj_to_store['_updatedAt'] = time.time()
@@ -118,7 +124,7 @@ class SimpleEntityHandler(BaseHandler):
         except ValueError:
             self.write_error(500, message='Cannot store object!')
         except Exception, e:
-            self.write_error(500, message=e.value)
+            self.write_error(500, message=e)
 
 
     def put(self, object_id=None):
@@ -143,6 +149,13 @@ class SimpleEntityHandler(BaseHandler):
                     log_message='Updating object with id: {} not possible.'.format(object_id)
                 )
 
+            if illegal_attributes_exist(obj_to_store):
+                self.write_error(
+                    400,
+                    message='Object contains keys starting with illegal characters, e.g. an underscore.'
+                )
+                return
+
             # TODO: Currently, a PUT will overwrite the existing object ... therefore, we always have a new _createdAt. Fix this!
             # update time stamp
             obj_to_store['_createdAt'] = time.time()
@@ -154,7 +167,7 @@ class SimpleEntityHandler(BaseHandler):
         except ValueError:
             self.write_error(500, message='Cannot store object!')
         except Exception, e:
-            self.write_error(500, message=e.value)
+            self.write_error(500, message=e)
 
 
     def delete(self, object_id=None):
