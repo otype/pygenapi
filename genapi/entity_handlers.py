@@ -16,13 +16,14 @@
 import json
 import logging
 import uuid
-import riak
 import time
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
 import tornado.httputil
+from analytics import send_analytics_data
 from base_handlers import BaseHandler
+from entity_handlers_helpers import get_single_object, search, fetch_all
 
 class SimpleEntityHandler(BaseHandler):
     """
@@ -42,93 +43,62 @@ class SimpleEntityHandler(BaseHandler):
     # Set of supported methods for this resource
     SUPPORTED_METHODS = ("GET", "POST", "PUT", "DELETE")
 
-    def __init__(self, application, request, bucket_name, riak_rq, riak_wq, **kwargs):
+    def __init__(self, application, request, bucket_name, riak_rq, riak_wq, api_id, api_version, entity_name, **kwargs):
         """
             Sets up the Riak client and the bucket
         """
         super(SimpleEntityHandler, self).__init__(application, request, **kwargs)
 
+        # Tell us a bit about the request
+        logging.debug(request)
+
+        # track in GA
+        send_analytics_data(
+            remote_ip=request.remote_ip,
+            user_agent=request.headers['User-Agent'],
+            api_id=api_id,
+            api_version=api_version,
+            entity_name=entity_name
+        )
+
+        # The constructed bucket name
         self.bucket_name = bucket_name
         logging.debug('Entity bucket = "{}"'.format(self.bucket_name))
 
         # Setup the Riak bucket
         self.bucket = self.client.bucket(self.bucket_name).set_r(riak_rq).set_w(riak_wq)
 
-    def fetch_all(self):
-        """
-            This is a helper function to run a map/reduce search call retrieving all objects within
-            this entity's bucket.
-        """
-        query = riak.RiakMapReduce(self.client).add(self.bucket_name)
-        query.map('function(v) { var data = JSON.parse(v.values[0].data); return [[v.key, data]]; }')
-        query.reduce('''function(v) {
-                var result = [];
-                for(val in v) {
-                    temp_res = {};
-                    temp_res['_id'] = v[val][0];
-                    temp_res['_data'] = v[val][1];
-                    result.push(temp_res);
-                }
-                return result;
-            }''')
-        return query.run()
 
-    def search(self, question):
-        """
-            Search within this entity's bucket.
-        """
-        query = self.client.search(self.bucket_name, question)
-        logging.debug('search_query: {}'.format(query))
-        response = []
-        for result in query.run():
-            # Getting ``RiakLink`` objects back.
-            obj = result.get()
-            obj_data = obj.get_data()
-            kv_object = {'_id': result._key, '_data': obj_data}
-            response.append(kv_object)
-
-        return response
-
-    def get_single_object(self, object_id):
-        """
-            Retrieve blog post with given id
-        """
-        return self.bucket.get(object_id).get_data()
-
-    #noinspection PyMethodOverriding
     def get(self, object_id=None):
         """
             Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
             we assume the user wants to have all objects in this bucket.
         """
-        # TODO: Report to Google Analytics the incoming request
-
         # TODO: Add another way to limit the query results (fetch_all()[:100])
         # TODO: Add another way to query for documents after/before a certain date
 
         if object_id:
-            self.write(self.get_single_object(object_id))
+            self.write(get_single_object(self.bucket, object_id))
             self.finish()
-        else:
-            query = self.get_argument('q', default=None)
+            return
 
-            results = ''
-            try:
-                if query:
-                    results = self.search(query)
-                else:
-                    results = self.fetch_all()
-                self.write({'results': results})
-            except Exception, e:
-                logging.error(e)
-                self.write_error(500, message='Error on fetching all objects!')
+        # No object id? Ok, we'll continue with search/fetch_all
+        query = self.get_argument('q', default=None)
+        try:
+            if query:
+                results = search(self.client, self.bucket_name, query)
+            else:
+                results = fetch_all(self.client, self.bucket_name)
+            self.write({'results': results})
+        except Exception, e:
+            logging.error(e)
+            self.write_error(500, message='Error on fetching all objects!')
+
 
     def post(self, *args, **kwargs):
         """
             Stores a new blog post into Riak
         """
-        # TODO: Report to Google Analytics the incoming request
-
         object_id = uuid.uuid1().hex
         logging.debug("created new object id: {}".format(object_id))
         try:
@@ -149,12 +119,11 @@ class SimpleEntityHandler(BaseHandler):
         except Exception, e:
             self.write_error(500, message=e.value)
 
+
     def put(self, object_id=None):
         """
             Stores a new blog post into Riak
         """
-        # TODO: Report to Google Analytics the incoming request
-
         if object_id is None:
             raise tornado.web.HTTPError(400, log_message="Missing object id")
 
@@ -186,12 +155,11 @@ class SimpleEntityHandler(BaseHandler):
         except Exception, e:
             self.write_error(500, message=e.value)
 
+
     def delete(self, object_id=None):
         """
             Stores a new blog post into Riak
         """
-        # TODO: Report to Google Analytics the incoming request
-
         if object_id is None:
             raise tornado.web.HTTPError(400, log_message="Missing object id")
 

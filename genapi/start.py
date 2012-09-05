@@ -71,27 +71,43 @@ def routes(parsed_opts):
     assert parsed_opts.riak_rq
     assert parsed_opts.riak_wq
 
+    # This is the prefix for ALL URLs, e.g. /aaaaaaa/v1/user
+    base_url = parsed_opts.api_id
+
     all_routes = [
-        (r"/", RootWelcomeHandler),
-        (r"/info", RootWelcomeHandler),
-        (r"/status", AppStatusHandler, dict(api_version=parsed_opts.api_version)),
-        (r"/v{}/schema".format(parsed_opts.api_version), SchemaHandler, dict(schema=parsed_opts.entity))
+        (r"/{}/".format(base_url), RootWelcomeHandler),
+        (r"/{}/info".format(base_url), RootWelcomeHandler),
+        (r"/{}/status".format(base_url), AppStatusHandler, dict(api_version=parsed_opts.api_version)),
+        (r"/{}/v{}/schema".format(base_url, parsed_opts.api_version), SchemaHandler, dict(schema=parsed_opts.entity))
     ]
 
     # Now, go through the list of entities and add routes for each entity.
     for entity in parsed_opts.entity:
         bucket_name = get_bucket_name(parsed_opts.api_id, entity)
 
+        options_dict = dict(
+            bucket_name=bucket_name,
+            riak_rq=parsed_opts.riak_rq,
+            riak_wq=parsed_opts.riak_wq,
+            api_id=parsed_opts.api_id,
+            api_version=parsed_opts.api_version,
+            entity_name=entity
+        )
+
         # Setup route for retrieving all objects
-        all_routes.append(
-            (r"/v{}/{}".format(parsed_opts.api_version, entity), SimpleEntityHandler,
-             dict(bucket_name=bucket_name, riak_rq=parsed_opts.riak_rq, riak_wq=parsed_opts.riak_wq))
+        all_routes.append((
+            r"/{}/v{}/{}".format(base_url, parsed_opts.api_version, entity),
+            SimpleEntityHandler,
+            options_dict
+            )
         )
 
         # Setup route for getting single objects with given id
-        all_routes.append(
-            (r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity), SimpleEntityHandler,
-             dict(bucket_name=bucket_name, riak_rq=parsed_opts.riak_rq, riak_wq=parsed_opts.riak_wq))
+        all_routes.append((
+            r"/{}/v{}/{}/([0-9a-zA-Z]+)".format(base_url, parsed_opts.api_version, entity),
+            SimpleEntityHandler,
+            options_dict
+            )
         )
 
     return all_routes

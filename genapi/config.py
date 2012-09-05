@@ -25,3 +25,8 @@ APP_SETTINGS = {
     'cookie_secret': COOKIE_SECRET,
     'xheaders': True
 }
+
+GOOGLE_ANALYTICS = {
+    'dev_account_id' : "UA-28942332-7",         # TEST ENVIRONMENT GA
+    'live_account_id' : "UA-28942332-3"         # LIVE ENVIRONMENT GA
+}
