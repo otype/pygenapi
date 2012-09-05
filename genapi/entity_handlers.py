@@ -101,6 +101,8 @@ class SimpleEntityHandler(BaseHandler):
             Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
             we assume the user wants to have all objects in this bucket.
         """
+        # TODO: Report to Google Analytics the incoming request
+
         # TODO: Add another way to limit the query results (fetch_all()[:100])
         # TODO: Add another way to query for documents after/before a certain date
 
@@ -125,6 +127,8 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # TODO: Report to Google Analytics the incoming request
+
         object_id = uuid.uuid1().hex
         logging.debug("created new object id: {}".format(object_id))
         try:
@@ -149,6 +153,8 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # TODO: Report to Google Analytics the incoming request
+
         if object_id is None:
             raise tornado.web.HTTPError(400, log_message="Missing object id")
 
@@ -184,6 +190,8 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # TODO: Report to Google Analytics the incoming request
+
         if object_id is None:
             raise tornado.web.HTTPError(400, log_message="Missing object id")
 
