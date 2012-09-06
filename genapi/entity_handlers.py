@@ -126,7 +126,7 @@ class SimpleEntityHandler(BaseHandler):
             result = self.bucket.new(object_id, obj_to_store).store()
             self.set_status(201)
             self.write(
-                Response(status_code=201, status_message='OK', result={"_id": result._key}).get_data().get_data()
+                Response(status_code=201, status_message='OK', result={"_id": result._key}).get_data()
             )
         except ValueError:
             self.write_error(500, message='Cannot store object!')
