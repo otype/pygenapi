@@ -3,6 +3,12 @@
 
     GenAPI
 
+    Start GenAPI:
+
+    $ python ./start.py --port=7000 --riak_host=localhost --api_version=1 \
+      --api_id=aaaaaaaa --entity=user,object,contact
+
+
     Copyright (c) 2012 apitrary
 
 """
@@ -31,7 +37,6 @@ from pre_hooks import pre_start_hook
 ##############################################################################
 
 # Required shell parameters
-define("config", help="genapi service config file", type=str)
 define("port", help="run on the given port", type=int)
 define("riak_host", help="Riak database host", type=str)
 define("api_version", help="API Version (/vXXX)", type=int)
@@ -39,6 +44,7 @@ define("api_id", help="Unique API ID", type=str)
 define("entity", help="Entity name", type=str, multiple=True)
 
 # Shell parameters with default values
+define("config", help="genapi service config file", type=str)
 define("env", default='dev', help='start server in test, dev or live mode', type=str)
 define("riak_pb_port", default=8087, help="Riak Protocol Buffer port", type=int)
 define("riak_http_port", default=8098, help="Riak HTTP port", type=int)
