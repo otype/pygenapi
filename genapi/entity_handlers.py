@@ -53,6 +53,7 @@ class SimpleEntityHandler(BaseHandler):
         logging.debug(request)
 
         # track in GA
+        # TODO: This call should be asynchronous! Really!!!
         send_analytics_data(
             remote_ip=request.remote_ip,
             user_agent=request.headers['User-Agent'],
