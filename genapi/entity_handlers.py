@@ -17,13 +17,11 @@ import json
 import logging
 import uuid
 import time
-import tornado.ioloop
-import tornado.web
-import tornado.httpserver
-import tornado.httputil
 from analytics import send_analytics_data
 from base_handlers import BaseHandler
 from entity_handlers_helpers import get_single_object, search, fetch_all, illegal_attributes_exist, filter_out_timestamps
+from response import Response
+
 
 class SimpleEntityHandler(BaseHandler):
     """
@@ -79,7 +77,13 @@ class SimpleEntityHandler(BaseHandler):
         # TODO: Add another way to query for documents after/before a certain date
 
         if object_id:
-            self.write(get_single_object(self.bucket, object_id))
+            self.write(
+                Response(
+                    status_code=200,
+                    status_message='OK',
+                    result=get_single_object(self.bucket, object_id)
+                ).get_data()
+            )
             return
 
         # No object id? Ok, we'll continue with search/fetch_all
@@ -90,7 +94,7 @@ class SimpleEntityHandler(BaseHandler):
             else:
                 results = fetch_all(self.client, self.bucket_name)
 
-            self.write({'results': results})
+            self.write(Response(status_code=200, status_message='OK', result=results).get_data())
         except Exception, e:
             logging.error("Maybe too quick here? Error: {}".format(e))
             self.write_error(500, message='Error on fetching all objects!')
@@ -105,7 +109,7 @@ class SimpleEntityHandler(BaseHandler):
         try:
             obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
             if obj_to_store is None:
-                raise tornado.web.HTTPError(400)
+                self.write_error(400, "Object is not a valid JSON object!")
 
             if illegal_attributes_exist(obj_to_store):
                 self.write_error(
@@ -121,7 +125,9 @@ class SimpleEntityHandler(BaseHandler):
             # Check if this post is valid
             result = self.bucket.new(object_id, obj_to_store).store()
             self.set_status(201)
-            self.write({"id": result._key})
+            self.write(
+                Response(status_code=201, status_message='OK', result={"_id": result._key}).get_data().get_data()
+            )
         except ValueError:
             self.write_error(500, message='Cannot store object!')
         except Exception, e:
@@ -133,7 +139,8 @@ class SimpleEntityHandler(BaseHandler):
             Stores a new blog post into Riak
         """
         if object_id is None:
-            raise tornado.web.HTTPError(400, log_message="Missing object id")
+            self.set_status(400)
+            self.write_error(400, "Missing object ID!")
 
         # First, try to get the object (check if it exists)
         db_object = self.bucket.get(object_id).get_data()
@@ -145,10 +152,8 @@ class SimpleEntityHandler(BaseHandler):
         try:
             obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
             if obj_to_store is None:
-                raise tornado.web.HTTPError(
-                    304,
-                    log_message='Updating object with id: {} not possible.'.format(object_id)
-                )
+                self.write_error(304, 'Updating object with id: {} not possible.'.format(object_id))
+                return
 
             # Filter out '_createdAt' and '_updatedAt'
             obj_to_store, created_at, updated_at = filter_out_timestamps(obj_to_store)
@@ -167,7 +172,7 @@ class SimpleEntityHandler(BaseHandler):
 
             # Check if this post is valid
             updated_object = self.bucket.new(object_id, data=obj_to_store).store()
-            self.write({"id": updated_object._key})
+            self.write(Response(status_code=200, status_message='OK', result={"id": updated_object._key}).get_data())
         except ValueError:
             self.write_error(500, message='Cannot store object!')
         except Exception, e:
@@ -179,17 +184,19 @@ class SimpleEntityHandler(BaseHandler):
             Stores a new blog post into Riak
         """
         if object_id is None:
-            raise tornado.web.HTTPError(400, log_message="Missing object id")
+            self.write_error(400, "Missing object ID!")
+            return
 
         db_obj = self.bucket.get(object_id)
         if db_obj.get_data() is None:
-            raise tornado.web.HTTPError(410, log_message='Object with id: {} does not exist.'.format(object_id))
+            self.write_error(410, 'Object with id: {} does not exist.'.format(object_id))
+            return
 
         result = db_obj.delete()
         if result.get_data() is None:
             logging.debug("Deleted object with id: {}".format(object_id))
             self.set_status(200)
-            self.write({"deleted": object_id})
+            self.write(Response(status_code=200, status_message='OK', result={"deleted": object_id}).get_data())
         else:
-            raise tornado.web.HTTPError(410, log_message='Could not delete object with id: {}'.format(object_id))
+            self.write_error(410, 'Could not delete object with id: {}'.format(object_id))
 
