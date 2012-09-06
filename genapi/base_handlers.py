@@ -76,10 +76,6 @@ class BaseHandler(tornado.web.RequestHandler):
             message = kwargs['message']
 
         self.set_status(status_code)
-#        self.write({
-#            'error': message,
-#            'incident_time': time.time()
-#        })
         self.write(
             Response(status_code=status_code, status_message=message, result={"incident_time" : time.time()}).get_data()
         )
