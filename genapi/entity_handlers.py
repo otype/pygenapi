@@ -81,7 +81,7 @@ class SimpleEntityHandler(BaseHandler):
                 Response(
                     status_code=200,
                     status_message='OK',
-                    result=get_single_object(self.bucket, object_id)
+                    result={"_id": object_id, "_data":get_single_object(self.bucket, object_id)}
                 ).get_data()
             )
             return
