@@ -84,7 +84,9 @@ class SimpleEntityHandler(BaseHandler):
                     result={"_id": object_id, "_data":get_single_object(self.bucket, object_id)}
                 ).get_data()
             )
+            self.finish()
             return
+
 
         # No object id? Ok, we'll continue with search/fetch_all
         query = self.get_argument('q', default=None)
