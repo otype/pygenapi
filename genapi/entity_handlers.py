@@ -19,7 +19,7 @@ import uuid
 import time
 from analytics import send_analytics_data
 from base_handlers import BaseHandler
-from entity_handlers_helpers import get_single_object, search, fetch_all, illegal_attributes_exist, filter_out_timestamps
+from entity_handlers_helpers import get_single_object, search, fetch_all, illegal_attributes_exist, filter_out_timestamps, pop_field
 from response import Response
 
 
@@ -128,7 +128,7 @@ class SimpleEntityHandler(BaseHandler):
             result = self.bucket.new(object_id, obj_to_store).store()
             self.set_status(201)
             self.write(
-                Response(status_code=201, status_message='OK', result={"_id": result._key}).get_data().get_data()
+                Response(status_code=201, status_message='OK', result={"_id": result._key}).get_data()
             )
         except ValueError:
             self.write_error(500, message='Cannot store object!')
@@ -157,8 +157,8 @@ class SimpleEntityHandler(BaseHandler):
                 self.write_error(304, 'Updating object with id: {} not possible.'.format(object_id))
                 return
 
-            # Filter out '_createdAt' and '_updatedAt'
-            obj_to_store, created_at, updated_at = filter_out_timestamps(obj_to_store)
+            # Filter out the time stamps if they exist
+            obj, created_at, updated_at = filter_out_timestamps(obj_to_store)
 
             # Check if keys exist with illegally starting characters
             if illegal_attributes_exist(obj_to_store):
@@ -169,8 +169,10 @@ class SimpleEntityHandler(BaseHandler):
                 return
 
             # update time stamp
-            obj_to_store['_createdAt'] = created_at
+            obj_to_store['_createdAt'] = time.time()
             obj_to_store['_updatedAt'] = time.time()
+            if created_at:
+                obj_to_store['_createdAt'] = created_at
 
             # Check if this post is valid
             updated_object = self.bucket.new(object_id, data=obj_to_store).store()

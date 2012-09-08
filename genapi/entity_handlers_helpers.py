@@ -11,6 +11,24 @@ import logging
 import riak
 from config import ILLEGAL_CHARACTER_SET
 
+
+def pop_field(obj, field):
+    """
+        Pop a given field from given dictionary object.
+    """
+    popped_field = None
+    if obj is None:
+        return obj, popped_field
+
+    if field is None:
+        return obj, popped_field
+
+    if field in obj:
+        popped_field = obj.pop(field)
+
+    return obj, popped_field
+
+
 def filter_out_timestamps(obj):
     """
         If a PUT request body has the original _createdAt and _updatedAt fields, we don't want
@@ -19,8 +37,14 @@ def filter_out_timestamps(obj):
         to filter out those two keys and let the rest pass on. But: On PUT we should remember the
         _createdAt value and put it back in again.
     """
-    created_at = obj.pop('_createdAt')
-    updated_at = obj.pop('_updatedAt')
+    created_at = None
+    updated_at = None
+
+    if '_createdAt' in obj:
+        created_at = obj.pop('_createdAt')
+    if '_updatedAt' in obj:
+        updated_at = obj.pop('_updatedAt')
+
     return obj, created_at, updated_at
 
 
@@ -41,6 +65,7 @@ def illegal_attributes_exist(obj):
                 if key.startswith(illegal_character):
                     return True
     return False
+
 
 def fetch_all(client, bucket_name):
     """
@@ -81,6 +106,7 @@ def search(client, bucket_name, query):
         response.append(kv_object)
 
     return response
+
 
 def get_single_object(bucket, object_id):
     """

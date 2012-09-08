@@ -6,11 +6,13 @@
     Copyright (c) 2012 apitrary
 
 """
+import json
 import logging
 import riak
 import time
 import tornado.ioloop
 import tornado.web
+import tornado.escape
 from tornado import httpclient
 from tornado import gen
 import tornado.httpserver
@@ -77,8 +79,13 @@ class BaseHandler(tornado.web.RequestHandler):
 
         self.set_status(status_code)
         self.write(
-            Response(status_code=status_code, status_message=message, result={"incident_time" : time.time()}).get_data()
+            Response(
+                status_code=status_code,
+                status_message=message,
+                result={"incident_time" : time.time()}
+            ).get_data()
         )
+        self.finish()
 
 
 class RootWelcomeHandler(BaseHandler):
@@ -116,10 +123,14 @@ class AppStatusHandler(BaseHandler):
 
         self.write({
                 'db_status': riak_db_status,
-                'api_version': self.api_version,
-                'api_id': self.api_id
-            }
-        )
+                'api': {
+                    'api_version': self.api_version,
+                    'api_id': self.api_id,
+                    'base_url': '/{}/v{}'.format(self.api_id, self.api_version),
+                    'schema_url': '/{}/v{}/schema'.format(self.api_id, self.api_version)
+                },
+                'project': APP_DETAILS
+        })
         self.finish()
 
 
