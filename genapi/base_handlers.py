@@ -6,7 +6,6 @@
     Copyright (c) 2012 apitrary
 
 """
-import json
 import logging
 import riak
 import time

@@ -65,6 +65,9 @@ class Response(object):
         )
 
     def get_data(self):
+        """
+            Provides a dictionary of the response
+        """
         return {
             "statusCode": self.status_code,
             "statusMessage": self.status_message,
