@@ -137,7 +137,7 @@ class SimpleEntityHandler(BaseHandler):
             result = self.bucket.new(object_id, obj_to_store).store()
             self.set_status(201)
             self.write(
-                Response(status_code=201, status_message='OK', result={"_id": result._key}).get_data()
+                Response(status_code=201, status_message='Created', result={"_id": result._key, "_data": ""}).get_data()
             )
         except ValueError:
             self.write_error(500, message='Cannot store object!')
@@ -185,7 +185,12 @@ class SimpleEntityHandler(BaseHandler):
 
             # Check if this post is valid
             updated_object = self.bucket.new(object_id, data=obj_to_store).store()
-            self.write(Response(status_code=200, status_message='OK', result={"id": updated_object._key}).get_data())
+            self.write(
+                Response(
+                    status_code=200,
+                    status_message='No data content',
+                    result={"_id": updated_object._key, "_data": ""}).get_data()
+            )
         except ValueError:
             self.write_error(500, message='Cannot store object!')
         except Exception, e:
