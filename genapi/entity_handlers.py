@@ -20,6 +20,7 @@ import time
 from analytics import send_analytics_data
 from base_handlers import BaseHandler
 from entity_handlers_helpers import get_single_object
+from entity_handlers_helpers import validate_user_agent
 from entity_handlers_helpers import search
 from entity_handlers_helpers import fetch_all
 from entity_handlers_helpers import illegal_attributes_exist
@@ -58,7 +59,7 @@ class SimpleEntityHandler(BaseHandler):
         # TODO: This call should be asynchronous! Really!!!
         send_analytics_data(
             remote_ip=request.remote_ip,
-            user_agent=request.headers['User-Agent'],
+            user_agent=validate_user_agent(request=request.headers['User-Agent']),
             api_id=api_id,
             api_version=api_version,
             entity_name=entity_name

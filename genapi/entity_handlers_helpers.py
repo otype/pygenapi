@@ -113,3 +113,14 @@ def get_single_object(bucket, object_id):
         Retrieve blog post with given id
     """
     return bucket.get(object_id).get_data()
+
+
+def validate_user_agent(request):
+    """
+        Checks if a request has a User-agent set. If not
+        we need to set a default string.
+    """
+    if 'User-Agent' not in request.headers:
+        return 'UNKNOWN'
+    else:
+        return request.headers['User-Agent']
