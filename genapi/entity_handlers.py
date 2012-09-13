@@ -78,7 +78,7 @@ class SimpleEntityHandler(BaseHandler):
 
         if object_id:
             single_object = get_single_object(self.bucket, object_id)
-            if single_object is None:
+            if single_object is not None:
                 self.write(
                     Response(
                         status_code=200,
@@ -86,10 +86,10 @@ class SimpleEntityHandler(BaseHandler):
                         result={"_id": object_id, "_data":single_object}
                     ).get_data()
                 )
+                self.finish()
             else:
                 logging.error('Object with given id={} not found!'.format(object_id))
                 self.write_error(404, message='Object with given id not found!')
-            self.finish()
             return
 
 
