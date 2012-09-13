@@ -77,13 +77,18 @@ class SimpleEntityHandler(BaseHandler):
         # TODO: Add another way to query for documents after/before a certain date
 
         if object_id:
-            self.write(
-                Response(
-                    status_code=200,
-                    status_message='OK',
-                    result={"_id": object_id, "_data":get_single_object(self.bucket, object_id)}
-                ).get_data()
-            )
+            single_object = get_single_object(self.bucket, object_id)
+            if single_object is None:
+                self.write(
+                    Response(
+                        status_code=200,
+                        status_message='OK',
+                        result={"_id": object_id, "_data":single_object}
+                    ).get_data()
+                )
+            else:
+                logging.error('Object with given id={} not found!'.format(object_id))
+                self.write_error(404, message='Object with given id not found!')
             self.finish()
             return
 
