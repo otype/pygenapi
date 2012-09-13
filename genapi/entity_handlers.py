@@ -138,7 +138,11 @@ class SimpleEntityHandler(BaseHandler):
             result = self.bucket.new(object_id, obj_to_store).store()
             self.set_status(201)
             self.write(
-                Response(status_code=201, status_message='Created', result={"_id": result._key, "_data": ""}).get_data()
+                Response(
+                    status_code=201,
+                    status_message='Created',
+                    result={"_id": result._key, "_data": ""}
+                ).get_data()
             )
         except ValueError:
             self.write_error(500, message='Cannot store object!')
@@ -190,7 +194,8 @@ class SimpleEntityHandler(BaseHandler):
                 Response(
                     status_code=200,
                     status_message='No data content',
-                    result={"_id": updated_object._key, "_data": ""}).get_data()
+                    result={"_id": updated_object._key, "_data": ""}
+                ).get_data()
             )
         except ValueError:
             self.write_error(500, message='Cannot store object!')
@@ -215,7 +220,13 @@ class SimpleEntityHandler(BaseHandler):
         if result.get_data() is None:
             logging.debug("Deleted object with id: {}".format(object_id))
             self.set_status(200)
-            self.write(Response(status_code=200, status_message='OK', result={"deleted": object_id}).get_data())
+            self.write(
+                Response(
+                    status_code=200,
+                    status_message='Deleted',
+                    result={"_id": object_id, "_data":""}
+                ).get_data()
+            )
         else:
             self.write_error(404, 'Could not delete object with id: {}'.format(object_id))
 
