@@ -9,6 +9,7 @@
 
 """
 
+
 class Response(object):
     """
         Response template. Using get_data(), this method will deliver a

@@ -8,10 +8,14 @@
 """
 import json
 import logging
+import socket
 import riak
+import sys
 import tornado
+import tornado.ioloop
 from tornado.httpclient import AsyncHTTPClient
 from Helpers import get_bucket_name, database_bucket_url
+
 
 def store_init_object(opts, entity_name):
     assert opts.riak_host
@@ -34,8 +38,17 @@ def store_init_object(opts, entity_name):
     init_object = {'_init': 'OK'}
     logging.debug('Initializing bucket: "{}" with object: "{}"'.format(bucket_name, init_object))
 
-    # now, write the init object to the bucket
-    bucket.new('_init', init_object).store()
+    try:
+        # now, write the init object to the bucket
+        bucket.new('_init', init_object).store()
+    except riak.RiakError, e:
+        logging.error('Error on communicating to Riak database! {}'.format(e))
+        tornado.ioloop.IOLoop.instance().stop()
+        sys.exit(1)
+    except socket.error, e:
+        logging.error('Cannot connect to Riak database! {}'.format(e))
+        tornado.ioloop.IOLoop.instance().stop()
+        sys.exit(1)
 
 
 def curl_http_client():
@@ -152,6 +165,7 @@ def initialize_buckets(opts):
 #
 ##############################################################################
 
+
 def pre_start_hook(parsed_opts):
     """
         The PRE-Start hook! Before starting the server, actions can be run.
@@ -159,5 +173,3 @@ def pre_start_hook(parsed_opts):
 
     # Initialize all buckets
     initialize_buckets(opts=parsed_opts)
-
-

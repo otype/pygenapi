@@ -8,6 +8,7 @@
 """
 import logging
 
+
 def database_base_http_url(db_host, db_port):
     """
         Create the HTTP URL to the Riak database.
@@ -24,6 +25,7 @@ def database_base_http_url(db_host, db_port):
         port=db_port
     )
 
+
 def database_bucket_url(db_host, db_port, bucket_name):
     """
         Simply construct the correct URL to access a given bucket
@@ -33,6 +35,7 @@ def database_bucket_url(db_host, db_port, bucket_name):
         database_base_http_url(db_host=db_host, db_port=db_port),
         bucket_name
     )
+
 
 def get_bucket_name(api_id, entity_name):
     """

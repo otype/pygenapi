@@ -72,7 +72,6 @@ class SimpleEntityHandler(BaseHandler):
         # Setup the Riak bucket
         self.bucket = self.client.bucket(self.bucket_name).set_r(riak_rq).set_w(riak_wq)
 
-
     def get(self, object_id=None):
         """
             Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
@@ -88,7 +87,7 @@ class SimpleEntityHandler(BaseHandler):
                     Response(
                         status_code=200,
                         status_message='OK',
-                        result={"_id": object_id, "_data":single_object}
+                        result={"_id": object_id, "_data": single_object}
                     ).get_data()
                 )
                 self.finish()
@@ -96,7 +95,6 @@ class SimpleEntityHandler(BaseHandler):
                 logging.error('Object with given id={} not found!'.format(object_id))
                 self.write_error(404, message='Object with given id not found!')
             return
-
 
         # No object id? Ok, we'll continue with search/fetch_all
         query = self.get_argument('q', default=None)
@@ -110,7 +108,6 @@ class SimpleEntityHandler(BaseHandler):
         except Exception, e:
             logging.error("Maybe too quick here? Error: {}".format(e))
             self.write_error(500, message='Error on fetching all objects!')
-
 
     def post(self, *args, **kwargs):
         """
@@ -148,7 +145,6 @@ class SimpleEntityHandler(BaseHandler):
             self.write_error(500, message='Cannot store object!')
         except Exception, e:
             self.write_error(500, message=e)
-
 
     def put(self, object_id=None):
         """
@@ -202,7 +198,6 @@ class SimpleEntityHandler(BaseHandler):
         except Exception, e:
             self.write_error(500, message=e)
 
-
     def delete(self, object_id=None):
         """
             Stores a new blog post into Riak
@@ -224,9 +219,8 @@ class SimpleEntityHandler(BaseHandler):
                 Response(
                     status_code=200,
                     status_message='Deleted',
-                    result={"_id": object_id, "_data":""}
+                    result={"_id": object_id, "_data": ""}
                 ).get_data()
             )
         else:
             self.write_error(404, 'Could not delete object with id: {}'.format(object_id))
-

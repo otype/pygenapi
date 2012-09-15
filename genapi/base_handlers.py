@@ -69,11 +69,11 @@ class BaseHandler(tornado.web.RequestHandler):
             Called automatically when an error occurred. But can also be used to
             respond back to caller with a manual error.
         """
-        if kwargs.has_key('exc_info'):
+        if 'exc_info' in kwargs:
             logging.error(repr(kwargs['exc_info']))
 
         message = 'Something went seriously wrong! Maybe invalid resource? Ask your admin for advice!'
-        if kwargs.has_key('message'):
+        if 'message' in kwargs:
             message = kwargs['message']
 
         self.set_status(status_code)
@@ -81,7 +81,7 @@ class BaseHandler(tornado.web.RequestHandler):
             Response(
                 status_code=status_code,
                 status_message=message,
-                result={"incident_time" : time.time()}
+                result={"incident_time": time.time()}
             ).get_data()
         )
         self.finish()
@@ -121,14 +121,14 @@ class AppStatusHandler(BaseHandler):
         riak_db_status = response.body
 
         self.write({
-                'db_status': riak_db_status,
-                'api': {
-                    'api_version': self.api_version,
-                    'api_id': self.api_id,
-                    'base_url': '/{}/v{}'.format(self.api_id, self.api_version),
-                    'schema_url': '/{}/v{}/schema'.format(self.api_id, self.api_version)
-                },
-                'project': APP_DETAILS
+            'db_status': riak_db_status,
+            'api': {
+                'api_version': self.api_version,
+                'api_id': self.api_id,
+                'base_url': '/{}/v{}'.format(self.api_id, self.api_version),
+                'schema_url': '/{}/v{}/schema'.format(self.api_id, self.api_version)
+            },
+            'project': APP_DETAILS
         })
         self.finish()
 
@@ -141,7 +141,6 @@ class SchemaHandler(BaseHandler):
     def __init__(self, application, request, schema, **kwargs):
         super(SchemaHandler, self).__init__(application, request, **kwargs)
         self.schema = schema
-
 
     def get(self, *args, **kwargs):
         """

@@ -13,7 +13,6 @@
 
 """
 import logging
-import os
 import sys
 import tornado.ioloop
 import tornado.web
@@ -105,16 +104,14 @@ def routes(parsed_opts):
             r"/{}/v{}/{}".format(base_url, parsed_opts.api_version, entity),
             SimpleEntityHandler,
             options_dict
-            )
-        )
+        ))
 
         # Setup route for getting single objects with given id
         all_routes.append((
             r"/{}/v{}/{}/([0-9a-zA-Z]+)".format(base_url, parsed_opts.api_version, entity),
             SimpleEntityHandler,
             options_dict
-            )
-        )
+        ))
 
     return all_routes
 
@@ -190,32 +187,26 @@ def main():
     """
         Run all steps and config checks, then start the server
     """
-    ok = True
+    try:
+        # Parse the command line options
+        tornado.options.parse_command_line()
+    except tornado.options.Error, e:
+        sys.exit('ERROR: {}'.format(e))
 
-    if options.config:
-        if os.path.exists(options.config):
-            tornado.options.parse_config_file(options.config)
-        else:
-            logging.warn('Config file {} not found! Skipping.'.format(options.config))
-    else:
-        logging.info("No configuration file provided! Parsing shell parameters.")
-
-        try:
-            # Parse the command line options
-            tornado.options.parse_command_line()
-        except tornado.options.Error, e:
-            sys.exit('ERROR: {}'.format(e))
-
-        # From now on, we have the "parsed_opts" object.
-        # Ok, go & check the required options.
-        ok = options_ok(options)
-
-    if ok:
+    # From now on, we have the "parsed_opts" object.
+    # Ok, go & check the required options.
+    if options_ok(options):
         # Run the PRE-START hooks
         pre_start_hook(parsed_opts=options)
 
-        # Start the server
-        start_server(parsed_opts=options)
+        try:
+            # Start the server
+            start_server(parsed_opts=options)
+        except KeyboardInterrupt:
+            logging.info('Process stopped by user interaction.')
+        finally:
+            tornado.ioloop.IOLoop.instance().stop()
+
 
 ##############################################################################
 #

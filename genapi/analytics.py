@@ -30,8 +30,7 @@ def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path):
 
     # Collect everything in a dictionary
     DATA = {"utmwv": "5.2.2d",                      # Tracking code version
-            "utmn": str(randint(1, 9999999999)),    # Unique ID generated to each GIF request preventing
-                                                    # caching of GIF image
+            "utmn": str(randint(1, 9999999999)),    # Unique ID generated to each GIF request preventing caching
             "utmp": called_path,                    # The called path
             "utmac": ga_account_id,                 # GA profile identifier
             "utmcc": "__utma=%s;" % ".".join([
@@ -76,6 +75,7 @@ def generate_unique_user_id(api_id, remote_ip, user_agent):
 #
 ##############################################################################
 
+
 def send_analytics_data(remote_ip, user_agent, api_id, api_version, entity_name):
     """
         Trigger the Analytics call by sending the request information to
@@ -98,5 +98,3 @@ def send_analytics_data(remote_ip, user_agent, api_id, api_version, entity_name)
         ga_visitor_id=ga_visitor_id,
         called_path=ga_path
     )
-
-
