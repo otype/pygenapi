@@ -118,7 +118,7 @@ class SimpleEntityHandler(BaseHandler):
         try:
             obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
             if obj_to_store is None:
-                self.write_error(400, "Object is not a valid JSON object!")
+                self.write_error(400, message="Object is not a valid JSON object!")
 
             if illegal_attributes_exist(obj_to_store):
                 self.write_error(
@@ -152,7 +152,7 @@ class SimpleEntityHandler(BaseHandler):
         """
         if object_id is None:
             self.set_status(400)
-            self.write_error(400, "Missing object ID!")
+            self.write_error(400, message="Missing object ID!")
 
         # First, try to get the object (check if it exists)
         db_object = self.bucket.get(object_id).get_data()
@@ -164,7 +164,7 @@ class SimpleEntityHandler(BaseHandler):
         try:
             obj_to_store = json.loads(unicode(self.request.body, 'latin-1'))
             if obj_to_store is None:
-                self.write_error(400, 'Updating object with id: {} not possible.'.format(object_id))
+                self.write_error(400, message='Updating object with id: {} not possible.'.format(object_id))
                 return
 
             # Filter out the time stamps if they exist
@@ -203,12 +203,13 @@ class SimpleEntityHandler(BaseHandler):
             Stores a new blog post into Riak
         """
         if object_id is None:
-            self.write_error(400, "Missing object ID!")
+            self.write_error(400, message="Missing object ID!")
             return
 
         db_obj = self.bucket.get(object_id)
         if db_obj.get_data() is None:
-            self.write_error(404, 'Object with id: {} does not exist.'.format(object_id))
+            logging.debug('Object with id: {} does not exist.'.format(object_id))
+            self.write_error(404, message='Object with id: {} does not exist.'.format(object_id))
             return
 
         result = db_obj.delete()
@@ -223,4 +224,4 @@ class SimpleEntityHandler(BaseHandler):
                 ).get_data()
             )
         else:
-            self.write_error(404, 'Could not delete object with id: {}'.format(object_id))
+            self.write_error(404, message='Could not delete object with id: {}'.format(object_id))
