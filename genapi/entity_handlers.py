@@ -59,7 +59,7 @@ class SimpleEntityHandler(BaseHandler):
         # TODO: This call should be asynchronous! Really!!!
         send_analytics_data(
             remote_ip=request.remote_ip,
-            user_agent=validate_user_agent(request=request.headers['User-Agent']),
+            user_agent=validate_user_agent(request=request),
             api_id=api_id,
             api_version=api_version,
             entity_name=entity_name
