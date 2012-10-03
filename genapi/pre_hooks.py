@@ -13,6 +13,7 @@ import riak
 import sys
 import tornado
 import tornado.ioloop
+from _socket import gaierror
 from tornado.httpclient import AsyncHTTPClient
 from Helpers import get_bucket_name, database_bucket_url
 
@@ -45,8 +46,12 @@ def store_init_object(opts, entity_name):
         logging.error('Error on communicating to Riak database! {}'.format(e))
         tornado.ioloop.IOLoop.instance().stop()
         sys.exit(1)
+    except gaierror, e:
+        logging.error('Cannot connect to Riak database! Error: {}'.format(e))
+        tornado.ioloop.IOLoop.instance().stop()
+        sys.exit(1)
     except socket.error, e:
-        logging.error('Cannot connect to Riak database! {}'.format(e))
+        logging.error('Cannot connect to Riak database! Error: {}'.format(e))
         tornado.ioloop.IOLoop.instance().stop()
         sys.exit(1)
 
