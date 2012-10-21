@@ -61,8 +61,8 @@ class BaseHandler(tornado.web.RequestHandler):
         )
 
         # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
-#        self.client = self.riak_pb_client
-        self.client = self.riak_http_client
+        self.client = self.riak_pb_client
+#        self.client = self.riak_http_client
 
     def set_header(self, name, value):
         super(BaseHandler, self).set_header(name, value)
