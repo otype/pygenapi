@@ -94,64 +94,40 @@ class BaseHandler(tornado.web.RequestHandler):
         )
         self.finish()
 
-
-class RootWelcomeHandler(BaseHandler):
+class ApiStatusHandler(BaseHandler):
     """
         GET '/'
+        Shows status information about this about this deployed API
     """
 
-    def get(self, *args, **kwargs):
-        """
-            Print out the application details (see APP_DETAILS)
-        """
-        self.write(APP_DETAILS)
-
-
-class AppStatusHandler(BaseHandler):
-    """
-        GET '/info'
-        GET '/info/'
-    """
-
-    def __init__(self, application, request, api_version, api_id, **kwargs):
-        super(AppStatusHandler, self).__init__(application, request, **kwargs)
+    def __init__(self, application, request, api_version, api_id, schema, **kwargs):
+        super(ApiStatusHandler, self).__init__(application, request, **kwargs)
         self.api_version = api_version
         self.api_id = api_id
+        self.schema = schema
 
     @tornado.web.asynchronous
     @tornado.gen.engine
     def get(self, *args, **kwargs):
-        """
-            Asynchronously checks the database status by calling Riak's /ping url.
-        """
+        # create status
         riak_ping_url = '{}/ping'.format(self.riak_url)
         response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
         riak_db_status = response.body
 
-        self.write({
+        status = {
             'db_status': riak_db_status,
             'api': {
                 'api_version': self.api_version,
-                'api_id': self.api_id,
-                'base_url': '/{}/v{}'.format(self.api_id, self.api_version),
-                'schema_url': '/{}/v{}/schema'.format(self.api_id, self.api_version)
-            },
-            'project': APP_DETAILS
-        })
+                'api_id': self.api_id
+            }
+        }
+
+        # create the output
+        application_status = {
+            'info': APP_DETAILS,
+            'status': status,
+            'schema': self.schema
+        }
+
+        self.write(application_status)
         self.finish()
-
-
-class SchemaHandler(BaseHandler):
-    """
-        GET '/'
-    """
-
-    def __init__(self, application, request, schema, **kwargs):
-        super(SchemaHandler, self).__init__(application, request, **kwargs)
-        self.schema = schema
-
-    def get(self, *args, **kwargs):
-        """
-            Print out all entities for which we have created end points
-        """
-        self.write({"schema": self.schema})

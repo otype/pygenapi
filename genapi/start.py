@@ -23,7 +23,7 @@ from tornado.options import options
 from tornado.options import define
 from tornado.options import enable_pretty_logging
 from Helpers import show_all_settings, get_bucket_name
-from base_handlers import AppStatusHandler, RootWelcomeHandler, SchemaHandler
+from base_handlers import ApiStatusHandler
 from config import APP_SETTINGS
 from entity_handlers import SimpleEntityHandler
 from pre_hooks import pre_start_hook
@@ -80,10 +80,7 @@ def routes(parsed_opts):
     base_url = parsed_opts.api_id
 
     all_routes = [
-        (r"/", RootWelcomeHandler),
-        (r"/info", RootWelcomeHandler),
-        (r"/status", AppStatusHandler, dict(api_version=parsed_opts.api_version, api_id=parsed_opts.api_id)),
-        (r"/{}/v{}/schema".format(base_url, parsed_opts.api_version), SchemaHandler, dict(schema=parsed_opts.entity))
+        (r"/", ApiStatusHandler, dict(api_version=parsed_opts.api_version, api_id=parsed_opts.api_id, schema=parsed_opts.entity))
     ]
 
     # Now, go through the list of entities and add routes for each entity.
