@@ -101,6 +101,9 @@ class ApiStatusHandler(BaseHandler):
     """
 
     def __init__(self, application, request, api_version, api_id, schema, **kwargs):
+        """
+            Set up the basic Api Status handler responding on '/'
+        """
         super(ApiStatusHandler, self).__init__(application, request, **kwargs)
         self.api_version = api_version
         self.api_id = api_id
@@ -109,6 +112,9 @@ class ApiStatusHandler(BaseHandler):
     @tornado.web.asynchronous
     @tornado.gen.engine
     def get(self, *args, **kwargs):
+        """
+            Provides a basic hash with information for this deployed API.
+        """
         # create status
         riak_ping_url = '{}/ping'.format(self.riak_url)
         response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
