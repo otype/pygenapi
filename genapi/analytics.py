@@ -55,6 +55,13 @@ def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path):
     logging.debug("Sent data: \n{}".format(ga_response.info()))
 
 
+def send_data_to_piwik():
+    """
+        We are transitioning from Google Analytics (partly) to Piwik.
+        This method is for sending all registered requests to piwik.
+    """
+    pass
+
 def generate_unique_user_id(api_id, remote_ip, user_agent):
     """
         Generates a unique user id which will be sent to GA.
