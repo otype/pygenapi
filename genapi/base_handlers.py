@@ -62,8 +62,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
         # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
         self.client = self.riak_pb_client
-    #        self.client = self.riak_http_client
 
+        #        self.client = self.riak_http_client
 
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", '*')
@@ -93,6 +93,7 @@ class BaseHandler(tornado.web.RequestHandler):
             ).get_data()
         )
         self.finish()
+
 
 class ApiStatusHandler(BaseHandler):
     """

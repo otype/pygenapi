@@ -80,7 +80,10 @@ def routes(parsed_opts):
     base_url = parsed_opts.api_id
 
     all_routes = [
-        (r"/", ApiStatusHandler, dict(api_version=parsed_opts.api_version, api_id=parsed_opts.api_id, schema=parsed_opts.entity))
+        (r"/", ApiStatusHandler, dict(
+            api_version=parsed_opts.api_version,
+            api_id=parsed_opts.api_id,
+            schema=parsed_opts.entity))
     ]
 
     # Now, go through the list of entities and add routes for each entity.
