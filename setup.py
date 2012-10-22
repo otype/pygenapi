@@ -9,7 +9,14 @@
     Copyright (c) 2012 apitrary
 
 """
-from setuptools import setup
+try:
+    from setuptools import setup
+    from setuptools import find_packages
+except ImportError:
+    import ez_setup
+    ez_setup.use_setuptools()
+    from setuptools import setup
+    from setuptools import find_packages
 
 def read_requirements():
     """
