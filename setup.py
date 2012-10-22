@@ -9,15 +9,17 @@
     Copyright (c) 2012 apitrary
 
 """
-try:
-    from setuptools import setup
-    from setuptools import find_packages
-except ImportError:
-    import ez_setup
+from distutils.core import setup
 
-    ez_setup.use_setuptools()
-    from setuptools import setup
-    from setuptools import find_packages
+#try:
+#    from setuptools import setup
+#    from setuptools import find_packages
+#except ImportError:
+#    import ez_setup
+#
+#    ez_setup.use_setuptools()
+#    from setuptools import setup
+#    from setuptools import find_packages
 
 def read_requirements():
     """
