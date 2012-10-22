@@ -22,8 +22,8 @@ import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
 from tornado.options import enable_pretty_logging
-from helpers import show_all_settings
-from helpers import get_bucket_name
+from support import show_all_settings
+from support import get_bucket_name
 from base_handlers import ApiStatusHandler
 from config import APP_SETTINGS
 from entity_handlers import SimpleEntityHandler
