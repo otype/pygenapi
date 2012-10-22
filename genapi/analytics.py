@@ -12,7 +12,7 @@ from urllib import urlencode
 from urllib2 import urlopen
 from urlparse import urlunparse
 from hashlib import sha1
-from genapi.config import GOOGLE_ANALYTICS
+from config import GOOGLE_ANALYTICS
 
 
 def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path):

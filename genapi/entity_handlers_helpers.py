@@ -9,7 +9,7 @@
 import json
 import logging
 import riak
-from genapi.config import ILLEGAL_CHARACTER_SET
+from config import ILLEGAL_CHARACTER_SET
 
 
 def pop_field(obj, field):
