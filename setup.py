@@ -14,6 +14,7 @@ try:
     from setuptools import find_packages
 except ImportError:
     import ez_setup
+
     ez_setup.use_setuptools()
     from setuptools import setup
     from setuptools import find_packages
@@ -37,7 +38,7 @@ setup(name='pygenapi',
     maintainer='apitrary',
     maintainer_email='official@apitrary.com',
     url='https://apitrary_hgs@bitbucket.org/apitrary/pygenapi.git',
-    packages=['genapi'],
+    packages=find_packages(),
     scripts=['genapi/genapi.py'],
     license='copyright by apitrary',
     install_requires=read_requirements()
