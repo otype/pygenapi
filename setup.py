@@ -31,6 +31,7 @@ setup(name='pygenapi',
     maintainer_email='official@apitrary.com',
     url='https://apitrary_hgs@bitbucket.org/apitrary/pygenapi.git',
     packages=['genapi'],
+    scripts=['genapi/genapi.py'],
     license='copyright by apitrary',
     install_requires=read_requirements()
 )
