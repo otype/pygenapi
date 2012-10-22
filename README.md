@@ -4,6 +4,11 @@ Following libraries are required to run PyGenAPI:
 
 - riak
 - tornado
+- ez_setup
+- riak
+- pycurl
+- requests
+
 
 You can use the 'requirements.txt' to install the 
 dependencies:
@@ -24,8 +29,8 @@ Then install the dependencies:
 
 Finally, run PyGenAPI:
 
-    $ ./start_genapi <options>
+    $ ./start_genapi.sh <options>
 
 For help:
 
-    $ ./start_genapi --help
+    $ ./start_genapi.sh --help
