@@ -17,15 +17,15 @@ import json
 import logging
 import uuid
 import time
-from analytics import send_analytics_data
-from base_handlers import BaseHandler
-from entity_handlers_helpers import get_single_object
-from entity_handlers_helpers import validate_user_agent
-from entity_handlers_helpers import search
-from entity_handlers_helpers import fetch_all
-from entity_handlers_helpers import illegal_attributes_exist
-from entity_handlers_helpers import filter_out_timestamps
-from response import Response
+from genapi.analytics import send_analytics_data
+from genapi.base_handlers import BaseHandler
+from genapi.entity_handlers_helpers import get_single_object
+from genapi.entity_handlers_helpers import validate_user_agent
+from genapi.entity_handlers_helpers import search
+from genapi.entity_handlers_helpers import fetch_all
+from genapi.entity_handlers_helpers import illegal_attributes_exist
+from genapi.entity_handlers_helpers import filter_out_timestamps
+from genapi.response import Response
 
 
 class SimpleEntityHandler(BaseHandler):
