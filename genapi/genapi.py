@@ -22,7 +22,8 @@ import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
 from tornado.options import enable_pretty_logging
-from Helpers import show_all_settings, get_bucket_name
+from helpers import show_all_settings
+from helpers import get_bucket_name
 from base_handlers import ApiStatusHandler
 from config import APP_SETTINGS
 from entity_handlers import SimpleEntityHandler
@@ -104,14 +105,14 @@ def routes(parsed_opts):
             r"/{}/v{}/{}".format(base_url, parsed_opts.api_version, entity),
             SimpleEntityHandler,
             options_dict
-        ))
+            ))
 
         # Setup route for getting single objects with given id
         all_routes.append((
             r"/{}/v{}/{}/([0-9a-zA-Z]+)".format(base_url, parsed_opts.api_version, entity),
             SimpleEntityHandler,
             options_dict
-        ))
+            ))
 
     return all_routes
 
