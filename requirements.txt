@@ -1,5 +1,7 @@
-ez_setup
-riak
-tornado
-pycurl
-requests
+ez-setup==0.9
+pep8==1.3.3
+protobuf==2.4.1
+pycurl==7.19.0
+requests==0.14.0
+riak==1.4.1
+tornado==2.3
