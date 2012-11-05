@@ -30,7 +30,7 @@ def read_requirements():
 long_description = ('pygenapi is apitrary\'s generated REST API project')
 
 setup(name='pygenapi',
-    version='0.3.1',
+    version='0.3.2',
     description='Python Generated API for apitrary',
     long_description=long_description,
     author='Hans-Gunther Schmidt',
