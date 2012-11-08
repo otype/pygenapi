@@ -100,6 +100,7 @@ def routes(parsed_opts):
 
         # Setup route for retrieving all objects
         all_routes.append((
+            # TODO: Discuss this point here (removing the /v1)
 #            r"/v{}/{}".format(parsed_opts.api_version, entity),
             r"/{}".format(entity),
             SimpleEntityHandler,
@@ -108,6 +109,7 @@ def routes(parsed_opts):
 
         # Setup route for getting single objects with given id
         all_routes.append((
+            # TODO: Discuss this point here (removing the /v1)
 #            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
             r"/{}/([0-9a-zA-Z]+)".format(entity),
             SimpleEntityHandler,
