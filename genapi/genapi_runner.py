@@ -78,9 +78,6 @@ def routes(parsed_opts):
     assert parsed_opts.riak_rq
     assert parsed_opts.riak_wq
 
-    # This is the prefix for ALL URLs, e.g. /aaaaaaa/v1/user
-    base_url = parsed_opts.api_id
-
     all_routes = [
         (r"/", ApiStatusHandler, dict(
             api_version=parsed_opts.api_version,
@@ -103,14 +100,14 @@ def routes(parsed_opts):
 
         # Setup route for retrieving all objects
         all_routes.append((
-            r"/{}/v{}/{}".format(base_url, parsed_opts.api_version, entity),
+            r"/v{}/{}".format(parsed_opts.api_version, entity),
             SimpleEntityHandler,
             options_dict
             ))
 
         # Setup route for getting single objects with given id
         all_routes.append((
-            r"/{}/v{}/{}/([0-9a-zA-Z]+)".format(base_url, parsed_opts.api_version, entity),
+            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
             SimpleEntityHandler,
             options_dict
             ))
