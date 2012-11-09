@@ -44,9 +44,10 @@ class SimpleEntityHandler(BaseHandler):
     """
 
     # Set of supported methods for this resource
-    SUPPORTED_METHODS = ("GET", "POST", "PUT", "DELETE")
+    SUPPORTED_METHODS = ("GET", "POST", "PUT", "DELETE", "OPTIONS")
 
-    def __init__(self, application, request, bucket_name, riak_rq, riak_wq, api_id, api_version, env, entity_name, **kwargs):
+    def __init__(self, application, request, bucket_name, riak_rq, riak_wq, api_id, api_version, env, entity_name,
+                 **kwargs):
         """
             Sets up the Riak client and the bucket
         """
@@ -226,3 +227,12 @@ class SimpleEntityHandler(BaseHandler):
             )
         else:
             self.write_error(404, message='Could not delete object with id: {}'.format(object_id))
+
+    def options(self, *args, **kwargs):
+        """
+            Returning back the list of suported HTTP methods
+        """
+        self.set_status(200)
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Methods", ', '.join([str(x) for x in self.SUPPORTED_METHODS]))
+        self.write("ok")
