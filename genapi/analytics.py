@@ -73,6 +73,8 @@ def get_ga_profile(env):
     """
         Load the corresponding profile code for the environment
     """
+    if env.lower() == 'dev':
+        return GOOGLE_ANALYTICS['STAGING']
     if env.lower() == 'staging':
         return GOOGLE_ANALYTICS['STAGING']
     elif env.lower() == 'live':
