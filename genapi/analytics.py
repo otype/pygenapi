@@ -69,6 +69,17 @@ def generate_unique_user_id(api_id, remote_ip, user_agent):
         user_agent=user_agent
     )
 
+def get_ga_profile(env):
+    """
+        Load the corresponding profile code for the environment
+    """
+    if env.lower() == 'staging':
+        return GOOGLE_ANALYTICS['STAGING']
+    elif env.lower() == 'live':
+        return GOOGLE_ANALYTICS['LIVE']
+    else:
+        return GOOGLE_ANALYTICS['STAGING']
+
 ##############################################################################
 #
 # Trigger analytics call
@@ -76,7 +87,7 @@ def generate_unique_user_id(api_id, remote_ip, user_agent):
 ##############################################################################
 
 
-def send_analytics_data(remote_ip, user_agent, api_id, api_version, entity_name):
+def send_analytics_data(remote_ip, user_agent, api_id, api_version, env, entity_name):
     """
         Trigger the Analytics call by sending the request information to
         Google Analytics.
@@ -92,9 +103,8 @@ def send_analytics_data(remote_ip, user_agent, api_id, api_version, entity_name)
     )
 
     # Finally, send the request to Google Analytics
-    # TODO: Modify the GA account id depending on the environment of the GenAPI
     send_data_to_google_analytics(
-        ga_account_id=GOOGLE_ANALYTICS['dev_account_id'],
+        ga_account_id=get_ga_profile(env),
         ga_visitor_id=ga_visitor_id,
         called_path=ga_path
     )

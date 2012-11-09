@@ -27,8 +27,8 @@ APP_SETTINGS = {
 }
 
 GOOGLE_ANALYTICS = {
-    'dev_account_id': "UA-28942332-9",         # STAGING ENVIRONMENT GA
-    'live_account_id': "UA-28942332-3"         # LIVE ENVIRONMENT GA
+    'STAGING': "UA-28942332-9",         # STAGING ENVIRONMENT GA
+    'LIVE': "UA-28942332-3"             # LIVE ENVIRONMENT GA
 }
 
 ILLEGAL_ATTRIBUTES_SET = ['_createdAt', '_updatedAt', '_init']

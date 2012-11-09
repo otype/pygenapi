@@ -46,7 +46,7 @@ define("entity", help="Entity name", type=str, multiple=True)
 
 # Shell parameters with default values
 define("config", help="genapi service config file", type=str)
-define("env", default='dev', help='start server in test, dev or live mode', type=str)
+define("env", default='staging', help='start server in {staging|live} mode', type=str)
 define("riak_pb_port", default=8087, help="Riak Protocol Buffer port", type=int)
 define("riak_http_port", default=8098, help="Riak HTTP port", type=int)
 define("riak_rq", default=2, help="Riak READ QUORUM", type=int)
@@ -77,6 +77,7 @@ def routes(parsed_opts):
     assert parsed_opts.entity
     assert parsed_opts.riak_rq
     assert parsed_opts.riak_wq
+    assert parsed_opts.env
 
     all_routes = [
         (r"/", ApiStatusHandler, dict(
@@ -95,6 +96,7 @@ def routes(parsed_opts):
             riak_wq=parsed_opts.riak_wq,
             api_id=parsed_opts.api_id,
             api_version=parsed_opts.api_version,
+            env=parsed_opts.env,
             entity_name=entity
         )
 

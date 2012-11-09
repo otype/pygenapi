@@ -46,7 +46,7 @@ class SimpleEntityHandler(BaseHandler):
     # Set of supported methods for this resource
     SUPPORTED_METHODS = ("GET", "POST", "PUT", "DELETE")
 
-    def __init__(self, application, request, bucket_name, riak_rq, riak_wq, api_id, api_version, entity_name, **kwargs):
+    def __init__(self, application, request, bucket_name, riak_rq, riak_wq, api_id, api_version, env, entity_name, **kwargs):
         """
             Sets up the Riak client and the bucket
         """
@@ -62,6 +62,7 @@ class SimpleEntityHandler(BaseHandler):
             user_agent=validate_user_agent(request=request),
             api_id=api_id,
             api_version=api_version,
+            env=env,
             entity_name=entity_name
         )
 
