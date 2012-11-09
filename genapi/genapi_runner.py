@@ -46,7 +46,7 @@ define("entity", help="Entity name", type=str, multiple=True)
 
 # Shell parameters with default values
 define("config", help="genapi service config file", type=str)
-define("env", default='staging', help='start server in {staging|live} mode', type=str)
+define("env", default='dev', help='start server in {dev|live} mode', type=str)
 define("riak_pb_port", default=8087, help="Riak Protocol Buffer port", type=int)
 define("riak_http_port", default=8098, help="Riak HTTP port", type=int)
 define("riak_rq", default=2, help="Riak READ QUORUM", type=int)
