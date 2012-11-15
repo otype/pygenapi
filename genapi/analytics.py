@@ -93,6 +93,32 @@ def send_analytics_data(remote_ip, user_agent, api_id, api_version, env, entity_
     """
         Trigger the Analytics call by sending the request information to
         Google Analytics.
+
+        Please note the GA limits:
+
+        Maximum number of accounts: 100+
+        Maximum number of profiles per account: 50
+        Maximum number of requests per single session visit: 500
+        Maximum requests per 5 seconds: 10
+        Number of characters in report filter: 256
+        Number of statements in an advanced segment: None
+        Number of rows per report: 500-unlimited
+        Maximum number of visits per day: 50,000
+        Maximum number of page views: 10 million
+
+        Overall API Limits
+        - 50,000 requests per project per day
+        - 10 queries per second (QPS) per IP
+        - No more than 4 requests at the same time. (per IP address)
+        - No more than 10 requests for ALL Google API per IP address within a given 1 second period.
+
+        Core Reporting API Limits
+        - 10,000 requests per profile per day
+        - 10 concurrent requests per profile
+
+        Check:
+        http://www.quora.com/Google-Analytics/What-are-the-absolute-limits-of-Google-Analytics-accounts
+
     """
     # We are creating here the GA visitor id, based on various information
     ga_visitor_id = generate_unique_user_id(api_id, remote_ip, user_agent)
