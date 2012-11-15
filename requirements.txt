@@ -5,3 +5,4 @@ pycurl==7.19.0
 requests==0.14.0
 riak==1.4.1
 tornado==2.3
+uuid

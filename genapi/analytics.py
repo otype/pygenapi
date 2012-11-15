@@ -12,6 +12,7 @@ from urllib import urlencode
 from urllib2 import urlopen
 from urlparse import urlunparse
 from hashlib import sha1
+import uuid
 from genapi.config import GOOGLE_ANALYTICS
 
 
@@ -63,10 +64,11 @@ def generate_unique_user_id(api_id, remote_ip, user_agent):
     # TODO: Request UUID/AndroidUniqueID from SDK or all clients (possible: via Header variable)
     # For mobile, it should be following:
     # '{api_id}{uuid}{user_agent}'
-    return '{api_id}{remote_ip}{user_agent}'.format(
+    return '{api_id}{remote_ip}{user_agent}{uuid}'.format(
         api_id=api_id,
         remote_ip=remote_ip,
-        user_agent=user_agent
+        user_agent=user_agent,
+        uuid=uuid.uuid4()
     )
 
 def get_ga_profile(env):
