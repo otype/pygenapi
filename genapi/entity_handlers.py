@@ -17,6 +17,8 @@ import json
 import logging
 import uuid
 import time
+from analytics_piwik import track_request
+from config import PIWIK
 from genapi.analytics import send_analytics_data
 from genapi.base_handlers import BaseHandler
 from genapi.entity_handlers_helpers import get_single_object
@@ -56,15 +58,21 @@ class SimpleEntityHandler(BaseHandler):
         # Tell us a bit about the request
         logging.debug(request)
 
+        # Set a few things for Analytics tracking
+        self.api_id = api_id
+        self.api_version = api_version
+        self.entity_name = entity_name
+
         # track in GA
         # TODO: This call should be asynchronous! Really!!!
+        # Remove this as soon as PIWIK rules!
         send_analytics_data(
             remote_ip=request.remote_ip,
             user_agent=validate_user_agent(request=request),
-            api_id=api_id,
-            api_version=api_version,
+            api_id=self.api_id,
+            api_version=self.api_version,
             env=env,
-            entity_name=entity_name
+            entity_name=self.entity_name
         )
 
         # The constructed bucket name
@@ -81,6 +89,17 @@ class SimpleEntityHandler(BaseHandler):
         """
         # TODO: Add another way to limit the query results (fetch_all()[:100])
         # TODO: Add another way to query for documents after/before a certain date
+
+        # Track to Piwik
+        track_request(
+            piwik_host=PIWIK['STAGING']['HOST'],
+            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
+            piwik_rec=PIWIK['STAGING']['REC'],
+            api_id=self.api_id,
+            api_version=self.api_version,
+            http_method='GET',
+            entity_name=self.entity_name
+        )
 
         if object_id:
             single_object = get_single_object(self.bucket, object_id)
@@ -115,6 +134,17 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # Track to Piwik
+        track_request(
+            piwik_host=PIWIK['STAGING']['HOST'],
+            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
+            piwik_rec=PIWIK['STAGING']['REC'],
+            api_id=self.api_id,
+            api_version=self.api_version,
+            http_method='POST',
+            entity_name=self.entity_name
+        )
+
         object_id = uuid.uuid1().hex
         logging.debug("created new object id: {}".format(object_id))
         try:
@@ -152,6 +182,17 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # Track to Piwik
+        track_request(
+            piwik_host=PIWIK['STAGING']['HOST'],
+            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
+            piwik_rec=PIWIK['STAGING']['REC'],
+            api_id=self.api_id,
+            api_version=self.api_version,
+            http_method='PUT',
+            entity_name=self.entity_name
+        )
+
         if object_id is None:
             self.set_status(400)
             self.write_error(400, message="Missing object ID!")
@@ -204,6 +245,17 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # Track to Piwik
+        track_request(
+            piwik_host=PIWIK['STAGING']['HOST'],
+            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
+            piwik_rec=PIWIK['STAGING']['REC'],
+            api_id=self.api_id,
+            api_version=self.api_version,
+            http_method='DELETE',
+            entity_name=self.entity_name
+        )
+
         if object_id is None:
             self.write_error(400, message="Missing object ID!")
             return

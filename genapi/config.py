@@ -31,5 +31,13 @@ GOOGLE_ANALYTICS = {
     'LIVE': "UA-28942332-3"             # LIVE ENVIRONMENT GA
 }
 
+PIWIK = {
+    'STAGING' : {
+        'HOST': 'app1.dev.apitrary.net',
+        'SITE_ID': '3',
+        'REC': '1'
+    }
+}
+
 ILLEGAL_ATTRIBUTES_SET = ['_createdAt', '_updatedAt', '_init']
 ILLEGAL_CHARACTER_SET = ['_']
