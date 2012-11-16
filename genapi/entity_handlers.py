@@ -17,8 +17,6 @@ import json
 import logging
 import uuid
 import time
-from analytics_piwik import track_request
-from config import PIWIK
 from genapi.analytics import send_analytics_data
 from genapi.base_handlers import BaseHandler
 from genapi.entity_handlers_helpers import get_single_object
