@@ -111,22 +111,3 @@ def track_request(piwik_host, piwik_site_id, piwik_rec, api_id, api_version, htt
     )
 
     return analytics
-
-#if __name__ == "__main__":
-#    api_id = 'universalapi'
-#    api_version = 1
-#    entity_name = 'users'
-#    http_method = 'GET'
-#
-#    # Send the analytics tracking data - ONLY FOR DEBUGGING
-#    for i in range(1, 21):
-#        print "NUM: {}".format(i)
-#        print track_request(
-#            piwik_host='app1.dev.apitrary.net',
-#            piwik_site_id='3',
-#            piwik_rec='1',
-#            api_id=api_id,
-#            api_version=api_version,
-#            http_method=http_method,
-#            entity_name=entity_name
-#        )

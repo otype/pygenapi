@@ -16,7 +16,7 @@ import uuid
 from genapi.config import GOOGLE_ANALYTICS
 
 
-def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path):
+def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path, http_method):
     """
         Google Analytics magic.
 
@@ -34,14 +34,23 @@ def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path):
             "utmn": str(randint(1, 9999999999)),    # Unique ID generated to each GIF request preventing caching
             "utmp": called_path,                    # The called path
             "utmac": ga_account_id,                 # GA profile identifier
-            "utmcc": "__utma=%s;" % ".".join([
-                "1",        # Domain hash, unique for each domain
-                visitor,    # Unique Identifier (Unique ID)
-                "1",        # Timestamp of time you first visited the site
-                "1",        # Timestamp for the previous visit
-                "1",        # Timestamp for the current visit
-                "1"         # Number of sessions started
-            ])}
+            "utmcc": "__utma={};__utmv={};".format(
+                ".".join([
+                    "1",        # Domain hash, unique for each domain
+                    visitor,    # Unique Identifier (Unique ID)
+                    "1",        # Timestamp of time you first visited the site
+                    "1",        # Timestamp for the previous visit
+                    "1",        # Timestamp for the current visit
+                    "1"         # Number of sessions started
+                ]),
+                ".".join([
+                    '1',            # ID (up to 5 entries possible)
+                    'HTTP_METHOD',  # Our custom var = HTTP METHOD
+                    http_method,    # The value of HTTP METHOD
+                    '1'             # Track on visitor-level
+                ])
+            )
+    }
 
     # Encode this data and generate the final URL
     URL = urlunparse(("http",
@@ -91,7 +100,7 @@ def get_ga_profile(env):
 ##############################################################################
 
 
-def send_analytics_data(remote_ip, user_agent, api_id, api_version, env, entity_name):
+def send_analytics_data(remote_ip, user_agent, api_id, api_version, env, entity_name, http_method):
     """
         Trigger the Analytics call by sending the request information to
         Google Analytics.
@@ -136,5 +145,6 @@ def send_analytics_data(remote_ip, user_agent, api_id, api_version, env, entity_
     send_data_to_google_analytics(
         ga_account_id=get_ga_profile(env),
         ga_visitor_id=ga_visitor_id,
-        called_path=ga_path
+        called_path=ga_path,
+        http_method=http_method
     )
