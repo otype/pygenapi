@@ -46,8 +46,7 @@ def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path, htt
                 ".".join([
                     '1',            # ID (up to 5 entries possible)
                     'HTTP_METHOD',  # Our custom var = HTTP METHOD
-                    http_method,    # The value of HTTP METHOD
-                    '1'             # Track on visitor-level
+                    http_method     # The value of HTTP METHOD
                 ])
             )
     }
