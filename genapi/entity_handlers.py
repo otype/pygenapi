@@ -63,7 +63,7 @@ class SimpleEntityHandler(BaseHandler):
         self.api_version = api_version
         self.entity_name = entity_name
 
-        # track in GA
+        # track in Google Analytics!
         # TODO: This call should be asynchronous! Really!!!
         send_analytics_data(
             remote_ip=request.remote_ip,
@@ -75,16 +75,17 @@ class SimpleEntityHandler(BaseHandler):
             http_method=request.method
         )
 
+        # TODO: For now, Piwik is disabled! Re-use this code again if GA fails!
         # Track to Piwik
-        track_request(
-            piwik_host=PIWIK['STAGING']['HOST'],
-            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
-            piwik_rec=PIWIK['STAGING']['REC'],
-            api_id=self.api_id,
-            api_version=self.api_version,
-            http_method=request.method,
-            entity_name=self.entity_name
-        )
+#        track_request(
+#            piwik_host=PIWIK['STAGING']['HOST'],
+#            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
+#            piwik_rec=PIWIK['STAGING']['REC'],
+#            api_id=self.api_id,
+#            api_version=self.api_version,
+#            http_method=request.method,
+#            entity_name=self.entity_name
+#        )
 
         # The constructed bucket name
         self.bucket_name = bucket_name
