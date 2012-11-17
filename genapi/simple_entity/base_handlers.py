@@ -17,8 +17,8 @@ from tornado import gen
 import tornado.httpserver
 import tornado.httputil
 from tornado.options import options
-from genapi.config import APP_DETAILS
-from genapi.response import Response
+from settings.config import APP_DETAILS
+from simple_entity.response import Response
 
 
 class BaseHandler(tornado.web.RequestHandler):

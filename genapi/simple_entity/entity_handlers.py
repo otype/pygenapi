@@ -17,15 +17,16 @@ import json
 import logging
 import uuid
 import time
-from genapi.analytics import send_analytics_data
-from genapi.base_handlers import BaseHandler
-from genapi.entity_handlers_helpers import get_single_object
-from genapi.entity_handlers_helpers import validate_user_agent
-from genapi.entity_handlers_helpers import search
-from genapi.entity_handlers_helpers import fetch_all
-from genapi.entity_handlers_helpers import illegal_attributes_exist
-from genapi.entity_handlers_helpers import filter_out_timestamps
-from genapi.response import Response
+from simple_entity.base_handlers import BaseHandler
+from simple_entity.entity_handlers_helpers import get_single_object
+from simple_entity.entity_handlers_helpers import validate_user_agent
+from simple_entity.entity_handlers_helpers import search
+from simple_entity.entity_handlers_helpers import fetch_all
+from simple_entity.entity_handlers_helpers import illegal_attributes_exist
+from simple_entity.entity_handlers_helpers import filter_out_timestamps
+from simple_entity.response import Response
+from tracking.google_tracking_data import GoogleTrackingData
+from tracking.tracking_worker import send_tracking_data_asynchronously
 
 
 class SimpleEntityHandler(BaseHandler):
@@ -56,34 +57,32 @@ class SimpleEntityHandler(BaseHandler):
         # Tell us a bit about the request
         logging.debug(request)
 
-        # Set a few things for Analytics tracking
-        self.api_id = api_id
-        self.api_version = api_version
-        self.entity_name = entity_name
-
-        # track in Google Analytics!
-        # TODO: This call should be asynchronous! Really!!!
-        send_analytics_data(
-            remote_ip=request.remote_ip,
+        # Creating a GoogleTrackingData object with all necessary information we need from this
+        # incoming request.
+        tracking_data = GoogleTrackingData(
+            request=request,
             user_agent=validate_user_agent(request=request),
-            api_id=self.api_id,
-            api_version=self.api_version,
+            api_id=api_id,
+            api_version=api_version,
             env=env,
-            entity_name=self.entity_name,
-            http_method=request.method
+            entity_name=entity_name
         )
+
+        # Now, send this tracking data as JSON to our ZMQ worker which will take care of
+        # sending the data to Google ...
+        send_tracking_data_asynchronously(str(tracking_data.as_json()))
 
         # TODO: For now, Piwik is disabled! Re-use this code again if GA fails!
         # Track to Piwik
-#        track_request(
-#            piwik_host=PIWIK['STAGING']['HOST'],
-#            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
-#            piwik_rec=PIWIK['STAGING']['REC'],
-#            api_id=self.api_id,
-#            api_version=self.api_version,
-#            http_method=request.method,
-#            entity_name=self.entity_name
-#        )
+        #        track_request(
+        #            piwik_host=PIWIK['STAGING']['HOST'],
+        #            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
+        #            piwik_rec=PIWIK['STAGING']['REC'],
+        #            api_id=api_id,
+        #            api_version=api_version,
+        #            http_method=request.method,
+        #            entity_name=entity_name
+        #        )
 
         # The constructed bucket name
         self.bucket_name = bucket_name

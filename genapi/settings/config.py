@@ -10,7 +10,7 @@
 # Application details
 APP_DETAILS = {
     'name': 'PyGenAPI',
-    'version': '0.3.6',
+    'version': '0.4',
     'company': 'apitrary',
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
@@ -37,6 +37,11 @@ PIWIK = {
         'SITE_ID': '3',
         'REC': '1'
     }
+}
+
+ZMQ = {
+    'TRACKR_CONNECT_ADDRESS': "tcp://localhost:5555",  # ZMQ_SERVER is running locally (for now).
+    'TRACKR_BIND_ADDRESS': "tcp://*:5555"   # ZMQ_SERVER is running locally (for now).
 }
 
 ILLEGAL_ATTRIBUTES_SET = ['_createdAt', '_updatedAt', '_init']

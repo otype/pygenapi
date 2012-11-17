@@ -23,12 +23,12 @@ import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
 from tornado.options import enable_pretty_logging
-from genapi.genapi_support import show_all_settings
-from genapi.genapi_support import get_bucket_name
-from genapi.base_handlers import ApiStatusHandler
-from genapi.config import APP_SETTINGS
-from genapi.entity_handlers import SimpleEntityHandler
-from genapi.pre_hooks import pre_start_hook
+from simple_entity.genapi_support import show_all_settings
+from simple_entity.genapi_support import get_bucket_name
+from simple_entity.base_handlers import ApiStatusHandler
+from settings.config import APP_SETTINGS
+from simple_entity.entity_handlers import SimpleEntityHandler
+from simple_entity.pre_hooks import pre_start_hook
 
 
 ##############################################################################

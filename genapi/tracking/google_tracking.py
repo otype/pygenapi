@@ -13,7 +13,7 @@ from urllib2 import urlopen
 from urlparse import urlunparse
 from hashlib import sha1
 import uuid
-from genapi.config import GOOGLE_ANALYTICS
+from settings.config import GOOGLE_ANALYTICS
 
 
 def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path, http_method):
@@ -69,9 +69,6 @@ def generate_unique_user_id(api_id, remote_ip, user_agent):
         Generates a unique user id which will be sent to GA.
         We need this to distinguish between different users/clients.
     """
-    # TODO: Request UUID/AndroidUniqueID from SDK or all clients (possible: via Header variable)
-    # For mobile, it should be following:
-    # '{api_id}{uuid}{user_agent}'
     return '{api_id}{remote_ip}{user_agent}{uuid}'.format(
         api_id=api_id,
         remote_ip=remote_ip,
