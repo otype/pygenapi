@@ -87,11 +87,11 @@ class SimpleEntityHandler(BaseHandler):
         # TODO: Add another way to limit the query results (fetch_all()[:100])
         # TODO: Add another way to query for documents after/before a certain date
 
-        # Enforce application/json as content-type
-        if not is_content_type_application_json(self.headers):
-            logging.error("Content-Type is not application/json!")
-            self.write_error(406, message='Content-Type is not application/json.')
-            return
+#        # Enforce application/json as content-type
+#        if not is_content_type_application_json(self.headers):
+#            logging.error("Content-Type is not application/json!")
+#            self.write_error(406, message='Content-Type is not application/json.')
+#            return
 
         if object_id:
             single_object = get_single_object(self.bucket, object_id)
@@ -126,11 +126,11 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-        # Enforce application/json as content-type
-        if not is_content_type_application_json(self.headers):
-            logging.error("Content-Type is not application/json!")
-            self.write_error(406, message='Content-Type is not application/json.')
-            return
+#        # Enforce application/json as content-type
+#        if not is_content_type_application_json(self.headers):
+#            logging.error("Content-Type is not application/json!")
+#            self.write_error(406, message='Content-Type is not application/json.')
+#            return
 
         object_id = uuid.uuid1().hex
         logging.debug("created new object id: {}".format(object_id))
@@ -169,11 +169,11 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-        # Enforce application/json as content-type
-        if not is_content_type_application_json(self.headers):
-            logging.error("Content-Type is not application/json!")
-            self.write_error(406, message='Content-Type is not application/json.')
-            return
+#        # Enforce application/json as content-type
+#        if not is_content_type_application_json(self.headers):
+#            logging.error("Content-Type is not application/json!")
+#            self.write_error(406, message='Content-Type is not application/json.')
+#            return
 
         if object_id is None:
             self.set_status(400)
@@ -227,11 +227,11 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-        # Enforce application/json as content-type
-        if not is_content_type_application_json(self.headers):
-            logging.error("Content-Type is not application/json!")
-            self.write_error(406, message='Content-Type is not application/json.')
-            return
+#        # Enforce application/json as content-type
+#        if not is_content_type_application_json(self.headers):
+#            logging.error("Content-Type is not application/json!")
+#            self.write_error(406, message='Content-Type is not application/json.')
+#            return
 
         if object_id is None:
             self.write_error(400, message="Missing object ID!")
