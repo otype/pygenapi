@@ -29,7 +29,10 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def __init__(self, application, request, **kwargs):
         """
-            Base initializer! Sets up the riak (sync) client and the async http client for async Riak calls.
+            Base initializer! Sets up:
+            - the riak (sync) client,
+            - the async http client for async Riak calls,
+            - enforces application/json for all requests
         """
         super(BaseHandler, self).__init__(application, request, **kwargs)
 
@@ -62,7 +65,6 @@ class BaseHandler(tornado.web.RequestHandler):
 
         # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
         self.client = self.riak_pb_client
-
         #        self.client = self.riak_http_client
 
     def set_default_headers(self):

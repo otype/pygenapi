@@ -124,3 +124,24 @@ def validate_user_agent(request):
         return 'UNKNOWN'
     else:
         return request.headers['User-Agent']
+
+
+def is_content_type_application_json(headers):
+    """
+        Check if given request has content-type 'application/json'
+    """
+    content_type = get_key_from_header(headers, 'Content-Type')
+    if content_type == 'application/json':
+        return True
+    else:
+        return False
+
+
+def get_key_from_header(headers, key_name):
+    """
+        Read a given key from header of given request
+    """
+    for k, v in headers.get_all():
+        if k == key_name:
+            return v
+    return None

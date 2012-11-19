@@ -18,7 +18,7 @@ import logging
 import uuid
 import time
 from simple_entity.base_handlers import BaseHandler
-from simple_entity.entity_handlers_helpers import get_single_object
+from simple_entity.entity_handlers_helpers import get_single_object, is_content_type_application_json
 from simple_entity.entity_handlers_helpers import validate_user_agent
 from simple_entity.entity_handlers_helpers import search
 from simple_entity.entity_handlers_helpers import fetch_all
@@ -54,8 +54,8 @@ class SimpleEntityHandler(BaseHandler):
         """
         super(SimpleEntityHandler, self).__init__(application, request, **kwargs)
 
-        # Tell us a bit about the request
-        logging.debug(request)
+        # Get the headers ... we this this for checking for content-type
+        self.headers = request.headers
 
         # Creating a GoogleTrackingData object with all necessary information we need from this
         # incoming request.
@@ -72,18 +72,6 @@ class SimpleEntityHandler(BaseHandler):
         # sending the data to Google ...
         send_tracking_data_asynchronously(str(tracking_data.as_json()))
 
-        # TODO: For now, Piwik is disabled! Re-use this code again if GA fails!
-        # Track to Piwik
-        #        track_request(
-        #            piwik_host=PIWIK['STAGING']['HOST'],
-        #            piwik_site_id=PIWIK['STAGING']['SITE_ID'],
-        #            piwik_rec=PIWIK['STAGING']['REC'],
-        #            api_id=api_id,
-        #            api_version=api_version,
-        #            http_method=request.method,
-        #            entity_name=entity_name
-        #        )
-
         # The constructed bucket name
         self.bucket_name = bucket_name
         logging.debug('Entity bucket = "{}"'.format(self.bucket_name))
@@ -98,6 +86,12 @@ class SimpleEntityHandler(BaseHandler):
         """
         # TODO: Add another way to limit the query results (fetch_all()[:100])
         # TODO: Add another way to query for documents after/before a certain date
+
+        # Enforce application/json as content-type
+        if not is_content_type_application_json(self.headers):
+            logging.error("Content-Type is not application/json!")
+            self.write_error(406, message='Content-Type is not application/json.')
+            return
 
         if object_id:
             single_object = get_single_object(self.bucket, object_id)
@@ -132,6 +126,12 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # Enforce application/json as content-type
+        if not is_content_type_application_json(self.headers):
+            logging.error("Content-Type is not application/json!")
+            self.write_error(406, message='Content-Type is not application/json.')
+            return
+
         object_id = uuid.uuid1().hex
         logging.debug("created new object id: {}".format(object_id))
         try:
@@ -169,6 +169,12 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # Enforce application/json as content-type
+        if not is_content_type_application_json(self.headers):
+            logging.error("Content-Type is not application/json!")
+            self.write_error(406, message='Content-Type is not application/json.')
+            return
+
         if object_id is None:
             self.set_status(400)
             self.write_error(400, message="Missing object ID!")
@@ -221,6 +227,12 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
+        # Enforce application/json as content-type
+        if not is_content_type_application_json(self.headers):
+            logging.error("Content-Type is not application/json!")
+            self.write_error(406, message='Content-Type is not application/json.')
+            return
+
         if object_id is None:
             self.write_error(400, message="Missing object ID!")
             return
