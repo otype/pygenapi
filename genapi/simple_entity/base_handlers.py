@@ -72,7 +72,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
         self.set_header("Access-Control-Allow-Headers", "Content-Type, Depth, User-Agent, X-File-Size, "
                                                         "X-Requested-With, X-Requested-By, If-Modified-Since, "
-                                                        "X-File-Name, Cache-Control")
+                                                        "X-File-Name, Cache-Control, X-API-Key")
 
     def write_error(self, status_code, **kwargs):
         """
