@@ -21,10 +21,10 @@ from tornado import escape
 from services.entity_service import EntityService
 from services.search_service import SearchService
 from simple_entity.base_handlers import BaseHandler
-from simple_entity.entity_handlers_helpers import validate_user_agent
-from simple_entity.entity_handlers_helpers import get_current_time_formatted
-from simple_entity.entity_handlers_helpers import illegal_attributes_exist
-from simple_entity.entity_handlers_helpers import filter_out_timestamps
+from simple_entity.handler_helpers import validate_user_agent
+from simple_entity.handler_helpers import get_current_time_formatted
+from simple_entity.handler_helpers import illegal_attributes_exist
+from simple_entity.handler_helpers import filter_out_timestamps
 from models.google_tracking_data import GoogleTrackingData
 from services.tracking_service import TrackingService
 

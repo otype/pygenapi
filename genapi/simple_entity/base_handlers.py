@@ -18,7 +18,7 @@ import tornado.httputil
 from tornado.options import options
 from errors import NoDictionaryException
 from settings.config import APP_DETAILS
-from simple_entity.entity_handlers_helpers import get_current_time_formatted
+from simple_entity.handler_helpers import get_current_time_formatted
 from models.response import Response
 
 

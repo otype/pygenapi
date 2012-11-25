@@ -63,5 +63,3 @@ class RiakObjectIdNotProvidedException(BaseException):
             error_message = message
 
         super(RiakObjectIdNotProvidedException, self).__init__(error_message, *args, **kwargs)
-
-
