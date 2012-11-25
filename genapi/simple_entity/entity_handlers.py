@@ -26,7 +26,7 @@ from simple_entity.entity_handlers_helpers import get_current_time_formatted
 from simple_entity.entity_handlers_helpers import illegal_attributes_exist
 from simple_entity.entity_handlers_helpers import filter_out_timestamps
 from models.google_tracking_data import GoogleTrackingData
-from tracking.tracking_worker import send_tracking_data_asynchronously
+from services.tracking_service import TrackingService
 
 
 class SimpleEntityHandler(BaseHandler):
@@ -60,16 +60,15 @@ class SimpleEntityHandler(BaseHandler):
         # Creating a GoogleTrackingData object with all necessary information we need from this
         # incoming request. The, send this tracking data as JSON to our ZMQ worker which will take
         # care of sending the data to Google ...
-        send_tracking_data_asynchronously(
-            str(
-                GoogleTrackingData(
-                    request=request,
-                    user_agent=validate_user_agent(request=request),
-                    api_id=api_id,
-                    api_version=api_version,
-                    env=env,
-                    entity_name=entity_name
-                ).as_json()
+        tracking_service = TrackingService()
+        tracking_service.send_data_to_trackr(
+            GoogleTrackingData(
+                request=request,
+                user_agent=validate_user_agent(request=request),
+                api_id=api_id,
+                api_version=api_version,
+                env=env,
+                entity_name=entity_name
             )
         )
 
