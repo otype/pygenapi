@@ -18,12 +18,11 @@ import logging
 import uuid
 import time
 from simple_entity.base_handlers import BaseHandler
-from simple_entity.entity_handlers_helpers import get_single_object, is_content_type_application_json
+from simple_entity.entity_handlers_helpers import  is_content_type_application_json
 from simple_entity.entity_handlers_helpers import validate_user_agent
-from simple_entity.entity_handlers_helpers import search
-from simple_entity.entity_handlers_helpers import fetch_all
 from simple_entity.entity_handlers_helpers import illegal_attributes_exist
 from simple_entity.entity_handlers_helpers import filter_out_timestamps
+from simple_entity.processors.get_processor import GetService
 from simple_entity.response import Response
 from tracking.google_tracking_data import GoogleTrackingData
 from tracking.tracking_worker import send_tracking_data_asynchronously
@@ -79,45 +78,39 @@ class SimpleEntityHandler(BaseHandler):
         # Setup the Riak bucket
         self.bucket = self.client.bucket(self.bucket_name).set_r(riak_rq).set_w(riak_wq)
 
+    def initialize(self):
+        super(SimpleEntityHandler, self).initialize()
+        if
+
     def get(self, object_id=None):
         """
             Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
             we assume the user wants to have all objects in this bucket.
         """
-        # TODO: Add another way to limit the query results (fetch_all()[:100])
-        # TODO: Add another way to query for documents after/before a certain date
+        # Create GET Processor
+        service = GetService(riak_client=self.client, bucket_name=self.bucket_name, bucket=self.bucket,
+            headers=self.headers)
 
-#        # Enforce application/json as content-type
-#        if not is_content_type_application_json(self.headers):
-#            logging.error("Content-Type is not application/json!")
-#            self.write_error(406, message='Content-Type is not application/json.')
-#            return
+        # Enforce application/json as content-type
+        if not service.has_valid_content_type():
+            response = Response(status_code=406, status_message='Content-Type is not application/json.', result={})
+            self.write_error(status_code=406, response=response.get_data())
+            self.finish()
+            return
 
+        # Object ID available? Then fetch the object!
         if object_id:
-            single_object = get_single_object(self.bucket, object_id)
-            if single_object is not None:
-                self.write(
-                    Response(
-                        status_code=200,
-                        status_message='OK',
-                        result={"_id": object_id, "_data": single_object}
-                    ).get_data()
-                )
-                self.finish()
-            else:
-                logging.error('Object with given id={} not found!'.format(object_id))
-                self.write_error(404, message='Object with given id not found!')
+            self.write(service.fetch(object_id).get_data())
+            self.finish()
             return
 
         # No object id? Ok, we'll continue with search/fetch_all
         query = self.get_argument('q', default=None)
         try:
             if query:
-                results = search(self.client, self.bucket_name, query)
+                self.write(service.search(query).get_data())
             else:
-                results = fetch_all(self.client, self.bucket_name)
-
-            self.write(Response(status_code=200, status_message='OK', result=results).get_data())
+                self.write(service.fetch_all().get_data())
         except Exception, e:
             logging.error("Maybe too quick here? Error: {}".format(e))
             self.write_error(500, message='Error on fetching all objects!')
@@ -126,11 +119,11 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-#        # Enforce application/json as content-type
-#        if not is_content_type_application_json(self.headers):
-#            logging.error("Content-Type is not application/json!")
-#            self.write_error(406, message='Content-Type is not application/json.')
-#            return
+        # Enforce application/json as content-type
+        if not is_content_type_application_json(self.headers):
+            logging.error("Content-Type is not application/json!")
+            self.write_error(406, message='Content-Type is not application/json.')
+            return
 
         object_id = uuid.uuid1().hex
         logging.debug("created new object id: {}".format(object_id))
@@ -169,11 +162,11 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-#        # Enforce application/json as content-type
-#        if not is_content_type_application_json(self.headers):
-#            logging.error("Content-Type is not application/json!")
-#            self.write_error(406, message='Content-Type is not application/json.')
-#            return
+        # Enforce application/json as content-type
+        if not is_content_type_application_json(self.headers):
+            logging.error("Content-Type is not application/json!")
+            self.write_error(406, message='Content-Type is not application/json.')
+            return
 
         if object_id is None:
             self.set_status(400)
@@ -227,11 +220,11 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-#        # Enforce application/json as content-type
-#        if not is_content_type_application_json(self.headers):
-#            logging.error("Content-Type is not application/json!")
-#            self.write_error(406, message='Content-Type is not application/json.')
-#            return
+        # Enforce application/json as content-type
+        if not is_content_type_application_json(self.headers):
+            logging.error("Content-Type is not application/json!")
+            self.write_error(406, message='Content-Type is not application/json.')
+            return
 
         if object_id is None:
             self.write_error(400, message="Missing object ID!")

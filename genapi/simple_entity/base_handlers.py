@@ -86,14 +86,17 @@ class BaseHandler(tornado.web.RequestHandler):
         if 'message' in kwargs:
             message = kwargs['message']
 
+        response = Response(
+            status_code=status_code,
+            status_message=message,
+            result={"incident_time": time.time()}
+        ).get_data()
+
+        if 'response' in kwargs:
+            response = repr(kwargs['response'])
+
         self.set_status(status_code)
-        self.write(
-            Response(
-                status_code=status_code,
-                status_message=message,
-                result={"incident_time": time.time()}
-            ).get_data()
-        )
+        self.write(response)
         self.finish()
 
 
