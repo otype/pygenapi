@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
- 
+
     pygenapi
- 
+
     by hgschmidt
- 
+
     Copyright (c) 2012 apitrary
- 
+
 """
 import json
 from time import sleep
@@ -22,8 +22,8 @@ class TestSimpleEntity(object):
         self.db_key = ''
         self.test_url = 'http://localhost:7000/user'
 
-    #    def setUp(self):
-    #        self.db_key = 'e56b491136fc11e2b7f4e0f84717e184'
+#    def setUp(self):
+#        self.db_key = 'e56b491136fc11e2b7f4e0f84717e184'
 
     def test_simple_entity_get_all(self):
         response = self.client.fetch(self.test_url, method='GET')
