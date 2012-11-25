@@ -7,9 +7,7 @@
 
 """
 import json
-import logging
 from time import strftime, gmtime
-import riak
 from settings.config import ILLEGAL_CHARACTER_SET
 
 
