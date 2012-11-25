@@ -75,17 +75,13 @@ def fetch_all(client, bucket_name):
         Used in GET (EntityHandlers).
     """
     query = riak.RiakMapReduce(client).add(bucket_name)
-    query.map('function(v) { var data = JSON.parse(v.values[0].data); return [[v.key, data]]; }')
-    query.reduce('''function(v) {
-                var result = [];
-                for(val in v) {
-                    temp_res = {};
-                    temp_res['_id'] = v[val][0];
-                    temp_res['_data'] = v[val][1];
-                    result.push(temp_res);
-                }
-                return result;
-            }''')
+    query.map('''function(v) {
+                        var data = JSON.parse(v.values[0].data);
+                        if(v.key != '_init') {
+                            return [[v.key, data]];
+                        }
+                        return [];
+                    }''')
     return query.run()
 
 
