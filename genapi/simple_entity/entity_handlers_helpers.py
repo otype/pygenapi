@@ -8,6 +8,7 @@
 """
 import json
 import logging
+from time import strftime, gmtime
 import riak
 from settings.config import ILLEGAL_CHARACTER_SET
 
@@ -67,52 +68,11 @@ def illegal_attributes_exist(obj):
     return False
 
 
-def fetch_all(client, bucket_name):
+def get_current_time_formatted():
     """
-        This is a helper function to run a map/reduce search call retrieving all objects within
-        this entity's bucket.
-
-        Used in GET (EntityHandlers).
+        Create a nice time stamp of the current time
     """
-    query = riak.RiakMapReduce(client).add(bucket_name)
-    query.map('function(v) { var data = JSON.parse(v.values[0].data); return [[v.key, data]]; }')
-    query.reduce('''function(v) {
-                var result = [];
-                for(val in v) {
-                    temp_res = {};
-                    temp_res['_id'] = v[val][0];
-                    temp_res['_data'] = v[val][1];
-                    result.push(temp_res);
-                }
-                return result;
-            }''')
-    return query.run()
-
-
-def search(client, bucket_name, query):
-    """
-        Search within this entity's bucket.
-
-        Used in GET (EntityHandlers).
-    """
-    query = client.search(bucket_name, query)
-    logging.debug('search_query: {}'.format(query))
-    response = []
-    for result in query.run():
-        # Getting ``RiakLink`` objects back.
-        obj = result.get()
-        obj_data = obj.get_data()
-        kv_object = {'_id': result._key, '_data': obj_data}
-        response.append(kv_object)
-
-    return response
-
-
-def get_single_object(bucket, object_id):
-    """
-        Retrieve blog post with given id
-    """
-    return bucket.get(object_id).get_data()
+    return strftime('%d %b %Y %H:%M:%S +0000', gmtime())
 
 
 def validate_user_agent(request):
@@ -124,24 +84,3 @@ def validate_user_agent(request):
         return 'UNKNOWN'
     else:
         return request.headers['User-Agent']
-
-
-def is_content_type_application_json(headers):
-    """
-        Check if given request has content-type 'application/json'
-    """
-    content_type = get_key_from_header(headers, 'Content-Type')
-    if content_type == 'application/json':
-        return True
-    else:
-        return False
-
-
-def get_key_from_header(headers, key_name):
-    """
-        Read a given key from header of given request
-    """
-    for k, v in headers.get_all():
-        if k == key_name:
-            return v
-    return None

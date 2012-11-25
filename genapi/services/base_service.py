@@ -8,27 +8,20 @@
     Copyright (c) 2012 apitrary
 
 """
-import logging
-from response import Response
 
-class BaseProcessor(object):
+class BaseService(object):
     """
         Base Processor settings
     """
 
-    def __init__(self, headers, riak_client, bucket, bucket_name):
+    def __init__(self, headers):
         """
             Simple init method ...
         """
-        super(BaseProcessor, self).__init__()
+        super(BaseService, self).__init__()
 
         # Set the HTTP Headers
         self.headers = headers
-
-        # Set the Riak client, bucket name and bucket
-        self.riak_client = riak_client
-        self.bucket_name = bucket_name
-        self.bucket = bucket
 
     def has_valid_headers(self):
         """

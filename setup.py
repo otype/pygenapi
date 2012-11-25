@@ -30,7 +30,7 @@ def read_requirements():
 long_description = ('pygenapi is apitrary\'s generated REST API project')
 
 setup(name='pygenapi',
-    version='0.4.1',
+    version='0.5.0',
     description='Python Generated API for apitrary',
     long_description=long_description,
     author='Hans-Gunther Schmidt',
@@ -42,7 +42,7 @@ setup(name='pygenapi',
     package_dir={'': 'genapi'},
     scripts=[
         'genapi/genapi_runner.py',
-        'genapi/tracking/trackr.py'
+        'genapi/trackr.py'
     ],
     license='copyright by apitrary',
     install_requires=read_requirements()

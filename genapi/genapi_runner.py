@@ -23,7 +23,6 @@ import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
 from tornado.options import enable_pretty_logging
-from simple_entity.genapi_support import show_all_settings
 from simple_entity.genapi_support import get_bucket_name
 from simple_entity.base_handlers import ApiStatusHandler
 from settings.config import APP_SETTINGS
@@ -42,6 +41,7 @@ define("port", help="run on the given port", type=int)
 define("riak_host", help="Riak database host", type=str)
 define("api_version", help="API Version (/vXXX)", type=int)
 define("api_id", help="Unique API ID", type=str)
+define("api_key", help="Authorization Key", type=str)
 define("entity", help="Entity name", type=str, multiple=True)
 
 # Shell parameters with default values
@@ -79,11 +79,16 @@ def routes(parsed_opts):
     assert parsed_opts.riak_wq
     assert parsed_opts.env
 
+    if parsed_opts.env != 'dev':
+        assert parsed_opts.api_key
+
     all_routes = [
         (r"/", ApiStatusHandler, dict(
             api_version=parsed_opts.api_version,
             api_id=parsed_opts.api_id,
-            schema=parsed_opts.entity))
+            schema=parsed_opts.entity,
+            api_key=parsed_opts.api_key
+        ))
     ]
 
     # Now, go through the list of entities and add routes for each entity.
@@ -97,13 +102,13 @@ def routes(parsed_opts):
             api_id=parsed_opts.api_id,
             api_version=parsed_opts.api_version,
             env=parsed_opts.env,
-            entity_name=entity
+            entity_name=entity,
+            api_key=parsed_opts.api_key
         )
 
         # Setup route for retrieving all objects
         all_routes.append((
-            # TODO: Discuss this point here (removing the /v1)
-#            r"/v{}/{}".format(parsed_opts.api_version, entity),
+            #            r"/v{}/{}".format(parsed_opts.api_version, entity),
             r"/{}".format(entity),
             SimpleEntityHandler,
             options_dict
@@ -111,8 +116,7 @@ def routes(parsed_opts):
 
         # Setup route for getting single objects with given id
         all_routes.append((
-            # TODO: Discuss this point here (removing the /v1)
-#            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
+            #            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
             r"/{}/([0-9a-zA-Z]+)".format(entity),
             SimpleEntityHandler,
             options_dict
@@ -171,6 +175,31 @@ def _start_tornado_server(port, routes_configuration):
 
     # Ok, we're ready to start!
     tornado.ioloop.IOLoop.instance().start()
+
+
+def show_all_settings(opts, routes_configuration):
+    """
+        Show all routes configured for this service
+    """
+    assert opts.logging
+    assert opts.port
+    assert opts.riak_host
+    assert opts.api_id
+    assert opts.api_version
+
+    if opts.env != 'dev':
+        assert opts.api_key
+
+
+    logging.info('LOGGING LEVEL: {}'.format(opts.logging))
+    logging.info('SERVER PORT: {}'.format(opts.port))
+    logging.info('RIAK HOST: {}'.format(opts.riak_host))
+    logging.info('ENTITIES: {}'.format(opts.entity))
+    logging.info('API ID: {}'.format(opts.api_id))
+    logging.info('API VERSION: {}'.format(opts.api_version))
+    logging.info('API KEY PROVIDED: {}'.format(opts.api_key is not None))
+    for route in routes_configuration:
+        logging.info('NEW ROUTE: {} -- Handled by: "{}"'.format(repr(route[0]), route[1]))
 
 
 def start_server(parsed_opts):

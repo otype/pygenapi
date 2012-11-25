@@ -36,4 +36,7 @@ class GoogleTrackingData(object):
         self.entity_name = entity_name
 
     def as_json(self):
+        """
+            Return this Google tracking data as JSON object.
+        """
         return json.dumps(self.__dict__)

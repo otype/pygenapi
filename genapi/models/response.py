@@ -8,6 +8,7 @@
     Copyright (c) 2012 apitrary
 
 """
+import json
 
 
 class Response(object):
@@ -67,10 +68,12 @@ class Response(object):
 
     def get_data(self):
         """
-            Provides a dictionary of the response
+            Provides a correctly encoding string of the response
         """
-        return {
+        resp = {
             "statusCode": self.status_code,
             "statusMessage": self.status_message,
             "result": self.result
         }
+        return json.dumps(resp).decode('unicode-escape')
+

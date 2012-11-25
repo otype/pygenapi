@@ -8,7 +8,6 @@
 """
 import logging
 import riak
-import time
 import tornado.ioloop
 import tornado.web
 import tornado.escape
@@ -17,8 +16,10 @@ from tornado import gen
 import tornado.httpserver
 import tornado.httputil
 from tornado.options import options
+from errors import NoDictionaryException
 from settings.config import APP_DETAILS
-from simple_entity.response import Response
+from simple_entity.entity_handlers_helpers import get_current_time_formatted
+from models.response import Response
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -40,7 +41,6 @@ class BaseHandler(tornado.web.RequestHandler):
         self.async_http_client = tornado.httpclient.AsyncHTTPClient()
 
         # Setup Riak base URLs for AsyncHttpClient
-        # TODO: Make this configurable from outside the PyGenAPI!
         self.riak_protocol = 'http://'
         self.riak_url = '{protocol}{node}:{port}'.format(
             protocol=self.riak_protocol,
@@ -72,7 +72,32 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
         self.set_header("Access-Control-Allow-Headers", "Content-Type, Depth, User-Agent, X-File-Size, "
                                                         "X-Requested-With, X-Requested-By, If-Modified-Since, "
-                                                        "X-File-Name, Cache-Control, X-API-Key")
+                                                        "X-File-Name, Cache-Control, X-Api-Key")
+
+    def respond(self, payload, status_code=200, status_message='OK'):
+        """
+            The general responder for ALL cases (success response, error response)
+        """
+        if payload is None:
+            payload = {}
+
+        if type(payload) not in [dict, list]:
+            logging.error('payload is: {}'.format(payload))
+            logging.error('payload is type: {}'.format(type(payload)))
+            raise NoDictionaryException()
+
+        response = Response(
+            status_code=status_code,
+            status_message=status_message,
+            result=payload
+        ).get_data()
+
+        self.set_status(status_code)
+        self.set_header("Content-Type", "application/json; charset=UTF-8")
+        self.write(response)
+        if status_code in [200, 201, 204, 300]:
+            self.finish()
+
 
     def write_error(self, status_code, **kwargs):
         """
@@ -86,18 +111,11 @@ class BaseHandler(tornado.web.RequestHandler):
         if 'message' in kwargs:
             message = kwargs['message']
 
-        response = Response(
+        self.respond(
             status_code=status_code,
             status_message=message,
-            result={"incident_time": time.time()}
-        ).get_data()
-
-        if 'response' in kwargs:
-            response = repr(kwargs['response'])
-
-        self.set_status(status_code)
-        self.write(response)
-        self.finish()
+            payload={"incident_time": get_current_time_formatted()}
+        )
 
 
 class ApiStatusHandler(BaseHandler):
@@ -106,7 +124,7 @@ class ApiStatusHandler(BaseHandler):
         Shows status information about this about this deployed API
     """
 
-    def __init__(self, application, request, api_version, api_id, schema, **kwargs):
+    def __init__(self, application, request, api_version, api_id, schema, api_key, **kwargs):
         """
             Set up the basic Api Status handler responding on '/'
         """
@@ -114,6 +132,7 @@ class ApiStatusHandler(BaseHandler):
         self.api_version = api_version
         self.api_id = api_id
         self.schema = schema
+        self.api_key = api_key
 
     @tornado.web.asynchronous
     @tornado.gen.engine

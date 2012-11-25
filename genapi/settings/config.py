@@ -10,7 +10,7 @@
 # Application details
 APP_DETAILS = {
     'name': 'PyGenAPI',
-    'version': '0.4.1',
+    'version': '0.5.0',
     'company': 'apitrary',
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
@@ -45,4 +45,4 @@ ZMQ = {
 }
 
 ILLEGAL_ATTRIBUTES_SET = ['_createdAt', '_updatedAt', '_init']
-ILLEGAL_CHARACTER_SET = ['_']
+ILLEGAL_CHARACTER_SET = ['_', '__']
