@@ -18,7 +18,7 @@ import logging
 import uuid
 import time
 from simple_entity.base_handlers import BaseHandler
-from simple_entity.entity_handlers_helpers import get_single_object, is_content_type_application_json
+from simple_entity.entity_handlers_helpers import get_single_object
 from simple_entity.entity_handlers_helpers import validate_user_agent
 from simple_entity.entity_handlers_helpers import search
 from simple_entity.entity_handlers_helpers import fetch_all
@@ -214,8 +214,8 @@ class SimpleEntityHandler(BaseHandler):
             self.write(
                 Response(
                     status_code=200,
-                    status_message='No data content',
-                    result={"_id": updated_object._key, "_data": ""}
+                    status_message='OK',
+                    result={"_id": updated_object._key, "_data": updated_object.get_data()}
                 ).get_data()
             )
         except ValueError:
