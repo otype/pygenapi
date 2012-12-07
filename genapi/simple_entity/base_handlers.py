@@ -93,6 +93,7 @@ class BaseHandler(tornado.web.RequestHandler):
         ).get_data()
 
         self.set_status(status_code)
+        self.set_header("X-Calvin", "You know, Hobbes, some days even my lucky rocketship underpants don’t help.")
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         self.write(response)
         if status_code in [200, 201, 204, 300]:

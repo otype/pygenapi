@@ -6,6 +6,6 @@ pycurl==7.19.0
 pyzmq==2.2.0.1
 requests==0.14.0
 riak==1.4.1
-tornado==2.3
+tornado
 uuid==1.30
 wsgiref==0.1.2
