@@ -79,9 +79,6 @@ def routes(parsed_opts):
     assert parsed_opts.riak_wq
     assert parsed_opts.env
 
-    if parsed_opts.env != 'dev':
-        assert parsed_opts.api_key
-
     all_routes = [
         (r"/", ApiStatusHandler, dict(
             api_version=parsed_opts.api_version,
