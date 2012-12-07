@@ -35,13 +35,13 @@ class BaseService(object):
         """
             Check if given request has content-type 'application/json'
         """
-        return self.get_key_from_header('Content-Type') == 'application/json'
+        return 'application/json' in self.get_key_from_header('Content-Type')
 
     def has_valid_accept_type(self):
         """
             Check if given request has content-type 'application/json'
         """
-        return self.get_key_from_header('Accept') == 'application/json'
+        return 'application/json' in self.get_key_from_header('Accept')
 
     def get_key_from_header(self, key_name):
         """
