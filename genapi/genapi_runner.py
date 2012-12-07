@@ -184,10 +184,6 @@ def show_all_settings(opts, routes_configuration):
     assert opts.api_id
     assert opts.api_version
 
-    if opts.env != 'dev':
-        assert opts.api_key
-
-
     logging.info('LOGGING LEVEL: {}'.format(opts.logging))
     logging.info('SERVER PORT: {}'.format(opts.port))
     logging.info('RIAK HOST: {}'.format(opts.riak_host))
