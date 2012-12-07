@@ -193,7 +193,11 @@ class SimpleEntityHandler(BaseHandler):
 
             # Check if this post is valid
             updated_object = self.entity_service.update(object_id=object_id, data=obj_to_store)
-            self.respond(status_message='No data content', payload={"_id": updated_object._key, "_data": ""})
+            self.respond(
+                status_message='No data content',
+                payload={"_id": updated_object._key, "_data": ""},
+                status_code=204
+            )
         except ValueError, e:
             logging.error('Cannot convert JSON object. Error: {}'.format(e))
             self.write_error(500, message='Cannot convert JSON object!')
