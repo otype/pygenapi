@@ -76,7 +76,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def options(self, *args, **kwargs):
         """
-            Returning back the list of suported HTTP methods
+            Returning back the list of supported HTTP methods
         """
         self.set_status(200)
         self.set_header("Access-Control-Allow-Origin", "*")
