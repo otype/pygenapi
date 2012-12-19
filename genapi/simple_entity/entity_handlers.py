@@ -233,15 +233,6 @@ class SimpleEntityHandler(BaseHandler):
         # All failed?
         self.write_error(404, message='Could not delete object with id: {}'.format(object_id))
 
-    def options(self, *args, **kwargs):
-        """
-            Returning back the list of suported HTTP methods
-        """
-        self.set_status(200)
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Methods", ', '.join([str(x) for x in self.SUPPORTED_METHODS]))
-        self.write("ok")
-
     def require_headers(self, require_api_key=True, require_content_type=False, require_accept=True):
         """
             Helper for checking the required header variables

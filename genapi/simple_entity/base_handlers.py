@@ -74,6 +74,15 @@ class BaseHandler(tornado.web.RequestHandler):
                                                         "X-Requested-With, X-Requested-By, If-Modified-Since, "
                                                         "X-File-Name, Cache-Control, X-Api-Key")
 
+    def options(self, *args, **kwargs):
+        """
+            Returning back the list of suported HTTP methods
+        """
+        self.set_status(200)
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Methods", ', '.join([str(x) for x in self.SUPPORTED_METHODS]))
+        self.write("ok")
+
     def respond(self, payload, status_code=200, status_message='OK'):
         """
             The general responder for ALL cases (success response, error response)
