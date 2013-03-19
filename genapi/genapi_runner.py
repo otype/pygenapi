@@ -68,6 +68,7 @@ enable_pretty_logging()
 ##############################################################################
 
 
+#noinspection PyTypeChecker
 def routes(parsed_opts):
     """
         Setup the URL routes with regex

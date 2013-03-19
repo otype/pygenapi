@@ -49,3 +49,7 @@ class TrackrService(object):
 
         # close the connection
         socket.close()
+
+        # Terminate context
+        context.term()
+        del context
