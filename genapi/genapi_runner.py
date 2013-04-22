@@ -110,7 +110,7 @@ def routes(parsed_opts):
             r"/{}".format(entity),
             SimpleEntityHandler,
             options_dict
-            ))
+        ))
 
         # Setup route for getting single objects with given id
         all_routes.append((
@@ -118,7 +118,7 @@ def routes(parsed_opts):
             r"/{}/([0-9a-zA-Z]+)".format(entity),
             SimpleEntityHandler,
             options_dict
-            ))
+        ))
 
     return all_routes
 
