@@ -64,7 +64,7 @@ def send_data_to_google_analytics(ga_account_id, ga_visitor_id, called_path, htt
             )
     }
     logging.debug("Sending DATA: {}".format(DATA))
-1
+
     # Encode this data and generate the final URL
     URL = urlunparse(("http",
                       "www.google-analytics.com",
