@@ -19,6 +19,7 @@ except ImportError:
     from setuptools import setup
     from setuptools import find_packages
 
+
 def read_requirements():
     """
         Read the requirements.txt file
@@ -27,12 +28,12 @@ def read_requirements():
         requirements = f.readlines()
     return [element.strip() for element in requirements]
 
-long_description = ('pygenapi is apitrary\'s generated REST API project')
 
-setup(name='pygenapi',
+setup(
+    name='pygenapi',
     version='0.5.2',
     description='Python Generated API for apitrary',
-    long_description=long_description,
+    long_description='pygenapi is apitrary\'s generated REST API project',
     author='Hans-Gunther Schmidt',
     author_email='hgs@apitrary.com',
     maintainer='apitrary',
