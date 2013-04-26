@@ -16,13 +16,13 @@
 import logging
 import sys
 import tornado.ioloop
+from tornado.log import enable_pretty_logging
 import tornado.web
 import tornado.httpserver
 import tornado.httputil
 import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
-from tornado.options import enable_pretty_logging
 from simple_entity.genapi_support import get_bucket_name
 from simple_entity.base_handlers import ApiStatusHandler
 from settings.config import APP_SETTINGS
@@ -59,7 +59,6 @@ PORT = options.port
 
 # Enable pretty logging
 enable_pretty_logging()
-
 
 ##############################################################################
 #

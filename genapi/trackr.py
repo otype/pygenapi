@@ -10,6 +10,7 @@
 """
 import json
 import logging
+from tornado.log import enable_pretty_logging
 import zmq
 from settings.config import ZMQ
 from tracking.google_tracking import send_analytics_data
