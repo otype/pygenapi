@@ -8,9 +8,10 @@
     Copyright (c) 2012 apitrary
 
 """
-import logging
 import zmq
+import logging
 from settings.config import ZMQ
+
 
 class TrackrService(object):
     """
@@ -26,7 +27,6 @@ class TrackrService(object):
         self.zmq_server = ZMQ['TRACKR_CONNECT_ADDRESS']
         if zmq_server:
             self.zmq_server = zmq_server
-
 
     def send_tracking_data_asynchronously(self, tracking_data):
         """
