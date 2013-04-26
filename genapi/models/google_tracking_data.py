@@ -26,7 +26,7 @@ class GoogleTrackingData(object):
         self.http_method = ""
 
         if request is not None:
-            self.remote_ip = request.remote_ip
+            self.remote_ip = request.headers.get('X-Real-Ip')
             self.http_method = request.method
 
         self.user_agent = user_agent
