@@ -10,7 +10,7 @@
     the end-point is defined in the main file. We are only interested in the bucket name
     of the underlying Riak database. Using the bucket, we only respond to HTTP verbs (CRUD).
 
-    Copyright (c) 2012 apitrary
+    Copyright (c) 2012 - 2013 apitrary
 
 """
 import json

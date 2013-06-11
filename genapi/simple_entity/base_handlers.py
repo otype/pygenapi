@@ -3,7 +3,7 @@
 
     GenAPI
 
-    Copyright (c) 2012 apitrary
+    Copyright (c) 2012 - 2013 apitrary
 
 """
 import logging
@@ -12,12 +12,10 @@ import tornado.ioloop
 import tornado.web
 import tornado.escape
 from tornado import httpclient
-from tornado import gen
 import tornado.httpserver
 import tornado.httputil
 from tornado.options import options
 from errors import NoDictionaryException
-from settings.config import APP_DETAILS
 from simple_entity.handler_helpers import get_current_time_formatted
 from models.response import Response
 
@@ -108,7 +106,6 @@ class BaseHandler(tornado.web.RequestHandler):
         if status_code in [200, 201, 204, 300]:
             self.finish()
 
-
     def write_error(self, status_code, **kwargs):
         """
             Called automatically when an error occurred. But can also be used to
@@ -126,49 +123,3 @@ class BaseHandler(tornado.web.RequestHandler):
             status_message=message,
             payload={"incident_time": get_current_time_formatted()}
         )
-
-
-class ApiStatusHandler(BaseHandler):
-    """
-        GET '/'
-        Shows status information about this about this deployed API
-    """
-
-    def __init__(self, application, request, api_version, api_id, schema, api_key, **kwargs):
-        """
-            Set up the basic Api Status handler responding on '/'
-        """
-        super(ApiStatusHandler, self).__init__(application, request, **kwargs)
-        self.api_version = api_version
-        self.api_id = api_id
-        self.schema = schema
-        self.api_key = api_key
-
-    @tornado.web.asynchronous
-    @tornado.gen.engine
-    def get(self, *args, **kwargs):
-        """
-            Provides a basic hash with information for this deployed API.
-        """
-        # create status
-        riak_ping_url = '{}/ping'.format(self.riak_url)
-        response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
-        riak_db_status = response.body
-
-        status = {
-            'db_status': riak_db_status,
-            'api': {
-                'api_version': self.api_version,
-                'api_id': self.api_id
-            }
-        }
-
-        # create the output
-        application_status = {
-            'info': APP_DETAILS,
-            'status': status,
-            'schema': self.schema
-        }
-
-        self.write(application_status)
-        self.finish()

@@ -5,7 +5,7 @@
 
     by hgschmidt
 
-    Copyright (c) 2012 apitrary
+    Copyright (c) 2012 - 2013 apitrary
 
 """
 from services.trackr_service import TrackrService

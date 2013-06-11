@@ -10,7 +10,7 @@
       --api_id=aaaaaaaa --entity=user,object,contact
 
 
-    Copyright (c) 2012 apitrary
+    Copyright (c) 2012 - 2013 apitrary
 
 """
 import logging
@@ -23,8 +23,8 @@ import tornado.httputil
 import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
+from simple_entity.api_status_handler import ApiStatusHandler
 from simple_entity.genapi_support import get_bucket_name
-from simple_entity.base_handlers import ApiStatusHandler
 from settings.config import APP_SETTINGS
 from simple_entity.entity_handlers import SimpleEntityHandler
 from simple_entity.pre_hooks import pre_start_hook
