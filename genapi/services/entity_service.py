@@ -13,6 +13,7 @@ from errors import RiakObjectIdNotProvidedException, RiakObjectNotFoundException
 from repositories.riak_entity_repository import RiakEntityRepository
 from services.base_service import BaseService
 
+
 class EntityService(BaseService):
     """
         Handle all calls in order to work with entities (from Riak)

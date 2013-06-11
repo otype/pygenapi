@@ -9,7 +9,8 @@
 
 """
 
-class BaseException(Exception):
+
+class GenapiBaseException(Exception):
     """
         Thrown when a received message is of unknown type
     """
@@ -18,7 +19,7 @@ class BaseException(Exception):
         """
             Log the message
         """
-        super(BaseException, self).__init__(*args, **kwargs)
+        super(GenapiBaseException, self).__init__(*args, **kwargs)
         self.message = message
 
     def __str__(self):
@@ -28,7 +29,7 @@ class BaseException(Exception):
         return self.message
 
 
-class NoDictionaryException(BaseException):
+class NoDictionaryException(GenapiBaseException):
     """
         Thrown when a received message is of unknown type
     """
@@ -40,7 +41,7 @@ class NoDictionaryException(BaseException):
         super(NoDictionaryException, self).__init__(error_message, *args, **kwargs)
 
 
-class RiakObjectNotFoundException(BaseException):
+class RiakObjectNotFoundException(GenapiBaseException):
     """
         Thrown when a received message is of unknown type
     """
@@ -52,7 +53,7 @@ class RiakObjectNotFoundException(BaseException):
         super(RiakObjectNotFoundException, self).__init__(error_message, *args, **kwargs)
 
 
-class RiakObjectIdNotProvidedException(BaseException):
+class RiakObjectIdNotProvidedException(GenapiBaseException):
     """
         Thrown when an object ID was required but not provided
     """

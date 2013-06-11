@@ -13,6 +13,7 @@ import riak
 from errors import RiakObjectNotFoundException
 from errors import RiakObjectIdNotProvidedException
 
+
 class RiakEntityRepository(object):
     """
         Processor to handle the GET request.
