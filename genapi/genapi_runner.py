@@ -111,10 +111,24 @@ def routes(parsed_opts):
             options_dict
         ))
 
+        all_routes.append((
+            #            r"/v{}/{}".format(parsed_opts.api_version, entity),
+            r"/{}.json".format(entity),
+            SimpleEntityHandler,
+            options_dict
+        ))
+
         # Setup route for getting single objects with given id
         all_routes.append((
             #            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
             r"/{}/([0-9a-zA-Z]+)".format(entity),
+            SimpleEntityHandler,
+            options_dict
+        ))
+
+        all_routes.append((
+            #            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
+            r"/{}/([0-9a-zA-Z]+).json".format(entity),
             SimpleEntityHandler,
             options_dict
         ))
