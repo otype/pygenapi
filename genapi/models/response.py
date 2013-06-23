@@ -71,8 +71,8 @@ class Response(object):
             Provides a correctly encoding string of the response
         """
         resp = {
-            "statusCode": self.status_code,
-            "statusMessage": self.status_message,
+            # "statusCode": self.status_code,
+            # "statusMessage": self.status_message,
             "result": self.result
         }
         return json.dumps(resp).decode('unicode-escape')
