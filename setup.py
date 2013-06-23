@@ -31,7 +31,7 @@ def read_requirements():
 
 setup(
     name='pygenapi',
-    version='0.5.3.2',
+    version='0.5.3.3',
     description='Python Generated API for apitrary',
     long_description='pygenapi is apitrary\'s generated REST API project',
     author='Hans-Gunther Schmidt',

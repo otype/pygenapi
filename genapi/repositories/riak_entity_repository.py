@@ -61,7 +61,7 @@ class RiakEntityRepository(object):
         query.map('''function(v) {
                         var data = JSON.parse(v.values[0].data);
                         if(v.key != '_init') {
-                            return [[{'_data': data, '_id': v.key}]];
+                            return [{'_data': data, '_id': v.key}];
                         }
                         return [];
                     }''')
