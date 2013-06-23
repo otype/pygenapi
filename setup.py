@@ -38,7 +38,7 @@ setup(
     author_email='hgs@apitrary.com',
     maintainer='apitrary',
     maintainer_email='official@apitrary.com',
-    url='https://hgschmidt@bitbucket.org/apitrary/pygenapi.git',
+    url='https://github.com/apitrary/pygenapi',
     packages=find_packages('genapi'),
     package_dir={'': 'genapi'},
     scripts=[
