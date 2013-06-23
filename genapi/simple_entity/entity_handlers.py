@@ -227,7 +227,7 @@ class SimpleEntityHandler(BaseHandler):
         # Ok, delete the object with given object id
         if self.entity_service.delete(object_id).get_data() is None:
             logging.debug("Deleted object with id: {}".format(object_id))
-            self.respond(status_message='Deleted', payload={"_id": object_id, "_data": ""})
+            self.respond(status_code=204, status_message='Deleted', payload={"_id": object_id, "_data": ""})
             return
 
         # All failed?
