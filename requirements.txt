@@ -1,5 +1,5 @@
 distribute==0.6.36
-protobuf==2.5.0
+protobuf==2.4.1
 pycurl==7.19.0
 pyzmq==13.0.2
 riak==1.5.2

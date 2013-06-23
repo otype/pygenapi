@@ -56,6 +56,7 @@ class RiakEntityRepository(object):
 
             Used in GET (EntityHandlers).
         """
+        # return [[{'_data': data, '_id': v.key}]];
         query = riak.RiakMapReduce(self.riak_client).add(self.bucket_name)
         query.map('''function(v) {
                         var data = JSON.parse(v.values[0].data);

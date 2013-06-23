@@ -96,7 +96,7 @@ class SimpleEntityHandler(BaseHandler):
         try:
             # Object ID available? Then fetch the object!
             if object_id:
-                self.respond(payload=self.entity_service.get(object_id=object_id))
+                self.respond(payload={'_data': self.entity_service.get(object_id=object_id)})
                 return
 
             # No object id? Ok, we'll continue with search/fetch_all
