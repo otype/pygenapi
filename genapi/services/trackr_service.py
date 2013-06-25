@@ -8,9 +8,11 @@
     Copyright (c) 2012 apitrary
 
 """
-import zmq
 import logging
-from settings.config import ZMQ
+
+import zmq
+
+from config import ZMQ
 
 
 class TrackrService(object):

@@ -17,8 +17,8 @@ import tornado.httpserver
 import tornado.httputil
 from tornado.options import options
 from errors import NoDictionaryException
-from models.error_response import ErrorResponse
-from models.response import Response
+from error_response import ErrorResponse
+from response import Response
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -132,3 +132,6 @@ class BaseHandler(tornado.web.RequestHandler):
             "I understand my tests are popular reading in the teachers’ lounge.",
             "I go to school, but I never learn what I want to know."
         ])
+
+    def on_finish(self):
+        logging.debug("Request finished.")

@@ -11,6 +11,7 @@
 import logging
 from services.base_service import BaseService
 
+
 class SearchService(BaseService):
     """
         All search-related service methods

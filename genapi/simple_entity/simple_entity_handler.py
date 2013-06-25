@@ -25,7 +25,7 @@ from simple_entity.handler_helpers import validate_user_agent
 from simple_entity.handler_helpers import get_current_time_formatted
 from simple_entity.handler_helpers import illegal_attributes_exist
 from simple_entity.handler_helpers import filter_out_timestamps
-from models.google_tracking_data import GoogleTrackingData
+from tracking.google_tracking_data import GoogleTrackingData
 from services.tracking_service import TrackingService
 
 
@@ -83,14 +83,16 @@ class SimpleEntityHandler(BaseHandler):
             headers=request.headers, riak_client=self.client, bucket_name=bucket_name, bucket=bucket
         )
 
+    def prepare(self):
+        if self.require_headers() == 1:
+            self.finish()
+            return
+
     def get(self, object_id=None):
         """
             Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
             we assume the user wants to have all objects in this bucket.
         """
-        if self.require_headers() == 1:
-            return
-
         try:
             # Object ID available? Then fetch the object!
             if object_id:
@@ -200,9 +202,6 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-        if self.require_headers() == 1:
-            return
-
         if object_id is None:
             self.write_error(400, message="Missing object ID!")
             return

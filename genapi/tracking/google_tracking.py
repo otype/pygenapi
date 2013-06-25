@@ -7,14 +7,16 @@
 
 """
 import re
-import uuid
 import logging
 from random import randint
 from urllib import urlencode
 from urllib2 import urlopen
 from urlparse import urlunparse
 from hashlib import sha1
-from settings.config import GOOGLE_ANALYTICS
+
+import uuid
+
+from config import GOOGLE_ANALYTICS
 
 
 def get_ip(remote_address):

@@ -8,7 +8,7 @@
 """
 import json
 from time import strftime, gmtime
-from settings.config import ILLEGAL_CHARACTER_SET
+from config import ILLEGAL_CHARACTER_SET
 
 
 def pop_field(obj, field):
