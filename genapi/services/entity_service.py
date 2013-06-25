@@ -33,7 +33,7 @@ class EntityService(BaseService):
         # Establish the repository to Riak
         self.repository = RiakEntityRepository(riak_client=riak_client, bucket=bucket, bucket_name=bucket_name)
 
-    def get(self, object_id):
+    def get_single(self, object_id):
         """
             GET a single object with given object ID
         """
@@ -52,19 +52,19 @@ class EntityService(BaseService):
         """
         return self.repository.fetch_all()
 
-    def post(self, object_id, data):
+    def add_single(self, object_id, data):
         """
             Create an object in database
         """
         return self.repository.add(object_id=object_id, data=data)
 
-    def update(self, object_id, data):
+    def update_single(self, object_id, data):
         """
             Update a given object. Runs the same steps as in post.
         """
         return self.repository.add(object_id=object_id, data=data)
 
-    def delete(self, object_id):
+    def delete_single(self, object_id):
         """
             Delete an object with given object id.
         """

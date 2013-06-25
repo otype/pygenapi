@@ -94,15 +94,18 @@ class SimpleEntityHandler(BaseHandler):
         try:
             # Object ID available? Then fetch the object!
             if object_id:
-                return self.respond(payload={'_data': self.entity_service.get(object_id=object_id), '_id': object_id})
+                self.respond(payload={'_data': self.entity_service.get_single(object_id=object_id), '_id': object_id})
+                return
 
-            # No object id? Ok, we'll continue with search/fetch_all
+                # No object id? Ok, we'll continue with search/fetch_all
             query = self.get_argument('q', default=None)
             if query:
-                return self.respond(payload=self.search_service.search(query))
+                self.respond(payload=self.search_service.search(query))
+                return
 
-            # No object id & no 'q'? Then, it's a regular GET ALL!
+                # No object id & no 'q'? Then, it's a regular GET ALL!
             self.respond(payload=self.entity_service.get_all())
+
         except ValueError, e:
             logging.error('Cannot convert JSON object. Error: {}'.format(e))
             self.write_error(500, message='Cannot convert JSON object!')
@@ -134,7 +137,7 @@ class SimpleEntityHandler(BaseHandler):
 
             obj_to_store['_createdAt'] = obj_to_store['_updatedAt'] = get_current_time_formatted()
 
-            result = self.entity_service.post(object_id=object_id, data=obj_to_store)
+            result = self.entity_service.add_single(object_id=object_id, data=obj_to_store)
             self.respond(status_code=201, payload={"_id": result._key, "_data": result.get_data()})
 
         except ValueError, e:
@@ -148,17 +151,15 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-        # Check the headers
         if self.require_headers(require_content_type=True) == 1:
             return
 
-        # Object Id provided?
         if object_id is None:
             self.set_status(400)
             self.write_error(400, message="Missing object ID!")
 
         # First, try to get the object (check if it exists)
-        db_object = self.entity_service.get(object_id)
+        db_object = self.entity_service.get_single(object_id)
         if db_object is None:
             self.write_error(404, message='Cannot update object: object with given id does not exist!')
             return
@@ -169,10 +170,8 @@ class SimpleEntityHandler(BaseHandler):
                 self.write_error(400, message='Updating object with id: {} not possible.'.format(object_id))
                 return
 
-            # Filter out the time stamps if they exist
             obj, created_at, updated_at = filter_out_timestamps(obj_to_store)
 
-            # Check if keys exist with illegally starting characters
             if illegal_attributes_exist(obj_to_store):
                 self.write_error(
                     400,
@@ -180,13 +179,11 @@ class SimpleEntityHandler(BaseHandler):
                 )
                 return
 
-            # update time stamp
             obj_to_store['_createdAt'] = obj_to_store['_updatedAt'] = get_current_time_formatted()
             if created_at:
                 obj_to_store['_createdAt'] = created_at
 
-            # Check if this post is valid
-            updated_object = self.entity_service.update(object_id=object_id, data=obj_to_store)
+            updated_object = self.entity_service.update_single(object_id=object_id, data=obj_to_store)
             self.respond(
                 status_message='No data content',
                 payload={"_id": updated_object._key, "_data": ""},
@@ -203,23 +200,21 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-        # Check the headers
         if self.require_headers() == 1:
             return
 
-        # Object ID was provided?
         if object_id is None:
             self.write_error(400, message="Missing object ID!")
             return
 
         # Check if we actually have an object with that ID
-        if self.entity_service.get(object_id) is None:
+        if self.entity_service.get_single(object_id) is None:
             logging.error('Object with id: {} does not exist.'.format(object_id))
             self.write_error(404, message='Object with id: {} does not exist.'.format(object_id))
             return
 
         # Ok, delete the object with given object id
-        if self.entity_service.delete(object_id).get_data() is None:
+        if self.entity_service.delete_single(object_id).get_data() is None:
             logging.debug("Deleted object with id: {}".format(object_id))
             self.respond(status_code=204, status_message='Deleted', payload={"_id": object_id, "_data": ""})
             return
@@ -249,5 +244,4 @@ class SimpleEntityHandler(BaseHandler):
                 self.write_error(status_code=406, message='Content-Type is not set to application/json.')
                 return 1
 
-        # All good
         return 0
