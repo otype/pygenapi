@@ -8,6 +8,8 @@
     Copyright (c) 2012 apitrary
 
 """
+import logging
+
 
 class BaseService(object):
     """

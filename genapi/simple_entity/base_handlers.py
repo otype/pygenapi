@@ -7,18 +7,17 @@
 
 """
 import logging
+import random
 import riak
 import tornado.ioloop
 import tornado.web
 import tornado.escape
 from tornado import httpclient
-from tornado import gen
 import tornado.httpserver
 import tornado.httputil
 from tornado.options import options
 from errors import NoDictionaryException
-from settings.config import APP_DETAILS
-from simple_entity.handler_helpers import get_current_time_formatted
+from models.error_response import ErrorResponse
 from models.response import Response
 
 
@@ -29,33 +28,22 @@ class BaseHandler(tornado.web.RequestHandler):
     """
 
     def __init__(self, application, request, **kwargs):
-        """
-            Base initializer! Sets up:
-            - the riak (sync) client,
-            - the async http client for async Riak calls,
-            - enforces application/json for all requests
-        """
         super(BaseHandler, self).__init__(application, request, **kwargs)
 
-        # Setup the Async HTTP client for calling Riak asynchronously
         self.async_http_client = tornado.httpclient.AsyncHTTPClient()
-
-        # Setup Riak base URLs for AsyncHttpClient
-        self.riak_protocol = 'http://'
-        self.riak_url = '{protocol}{node}:{port}'.format(
+        self.riak_protocol = 'http'
+        self.riak_url = '{protocol}://{node}:{port}'.format(
             protocol=self.riak_protocol,
             node=options.riak_host,
             port=options.riak_http_port
         )
 
-        # Riak HTTP client
         self.riak_http_client = riak.RiakClient(
             host=options.riak_host,
             port=options.riak_http_port,
             transport_class=riak.RiakHttpTransport
         )
 
-        # Riak PBC client
         #noinspection PyTypeChecker
         self.riak_pb_client = riak.RiakClient(
             host=options.riak_host,
@@ -65,7 +53,6 @@ class BaseHandler(tornado.web.RequestHandler):
 
         # This is a shortcut to quickly switch between the Riak HTTP and PBC client.
         self.client = self.riak_pb_client
-        #        self.client = self.riak_http_client
 
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", '*')
@@ -102,12 +89,9 @@ class BaseHandler(tornado.web.RequestHandler):
         ).get_data()
 
         self.set_status(status_code)
-        self.set_header("X-Calvin", "You know, Hobbes, some days even my lucky rocketship underpants don’t help.")
+        self.set_header("X-Calvin", self.calvinQuote())
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         self.write(response)
-        if status_code in [200, 201, 204, 300]:
-            self.finish()
-
 
     def write_error(self, status_code, **kwargs):
         """
@@ -121,54 +105,30 @@ class BaseHandler(tornado.web.RequestHandler):
         if 'message' in kwargs:
             message = kwargs['message']
 
-        self.respond(
-            status_code=status_code,
-            status_message=message,
-            payload={"incident_time": get_current_time_formatted()}
-        )
+        response = ErrorResponse(error_message=message)
 
+        self.set_status(status_code)
+        self.set_header("X-Calvin", self.calvinQuote())
+        self.set_header("Content-Type", "application/json; charset=UTF-8")
+        self.write(response.get_data())
 
-class ApiStatusHandler(BaseHandler):
-    """
-        GET '/'
-        Shows status information about this about this deployed API
-    """
-
-    def __init__(self, application, request, api_version, api_id, schema, api_key, **kwargs):
-        """
-            Set up the basic Api Status handler responding on '/'
-        """
-        super(ApiStatusHandler, self).__init__(application, request, **kwargs)
-        self.api_version = api_version
-        self.api_id = api_id
-        self.schema = schema
-        self.api_key = api_key
-
-    @tornado.web.asynchronous
-    @tornado.gen.engine
-    def get(self, *args, **kwargs):
-        """
-            Provides a basic hash with information for this deployed API.
-        """
-        # create status
-        riak_ping_url = '{}/ping'.format(self.riak_url)
-        response = yield tornado.gen.Task(self.async_http_client.fetch, riak_ping_url)
-        riak_db_status = response.body
-
-        status = {
-            'db_status': riak_db_status,
-            'api': {
-                'api_version': self.api_version,
-                'api_id': self.api_id
-            }
-        }
-
-        # create the output
-        application_status = {
-            'info': APP_DETAILS,
-            'status': status,
-            'schema': self.schema
-        }
-
-        self.write(application_status)
-        self.finish()
+    def calvinQuote(self):
+        return random.choice([
+            "You know, Hobbes, some days even my lucky rocketship underpants don’t help.",
+            "That is the difference between me and the rest of the world! Happiness isn’t good " +
+            "enough for me! I demand euphoria!",
+            "In my opinion, we don’t devote nearly enough scientific research to finding a cure for jerks.",
+            "What’s the point of wearing your favorite rocketship underpants if nobody ever asks to see ‘em?",
+            "This one’s tricky. You have to use imaginary numbers, like eleventeen …",
+            "I’m learning real skills that I can apply throughout the rest of my life … Procrastinating " +
+            "and rationalizing.",
+            "I’m not dumb. I just have a command of thoroughly useless information.",
+            "Life’s disappointments are harder to take when you don’t know any swear words.",
+            "I like maxims that don’t encourage behavior modification.",
+            "Weekends don’t count unless you spend them doing something completely pointless.",
+            "A little rudeness and disrespect can elevate a meaningless interaction to a battle of wills and "
+            "add drama to an otherwise dull day.",
+            "It’s psychosomatic. You need a lobotomy. I’ll get a saw.",
+            "I understand my tests are popular reading in the teachers’ lounge.",
+            "I go to school, but I never learn what I want to know."
+        ])

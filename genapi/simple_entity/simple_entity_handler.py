@@ -37,7 +37,9 @@ class SimpleEntityHandler(BaseHandler):
         It will respond to following HTTP verbs and URLs:
 
         GET     '/<entity_name>'
+        GET     '/<entity_name>.json'
         GET     '/<entity_name>/([0-9a-zA-Z]+)'
+        GET     '/<entity_name>/([0-9a-zA-Z]+).json'
         GET     '/<entity_name>?q=<key>:<search_value>'
         POST    '/<entity_name>'
         PUT     '/<entity_name>/([0-9a-zA-Z]+)'
@@ -53,8 +55,6 @@ class SimpleEntityHandler(BaseHandler):
             Sets up the Riak client and the bucket
         """
         super(SimpleEntityHandler, self).__init__(application, request, **kwargs)
-
-        # The API Key
         self.api_key = api_key
 
         # Creating a GoogleTrackingData object with all necessary information we need from this
@@ -76,7 +76,6 @@ class SimpleEntityHandler(BaseHandler):
         logging.debug('Entity bucket = "{}"'.format(bucket_name))
         bucket = self.client.bucket(bucket_name).set_r(riak_rq).set_w(riak_wq)
 
-        # Create required services
         self.entity_service = EntityService(
             headers=request.headers, riak_client=self.client, bucket_name=bucket_name, bucket=bucket
         )
@@ -89,21 +88,18 @@ class SimpleEntityHandler(BaseHandler):
             Fetch a set of objects. If user doesn't provide a query (e.g. place:Hann*), then
             we assume the user wants to have all objects in this bucket.
         """
-        # Check the headers
         if self.require_headers() == 1:
             return
 
         try:
             # Object ID available? Then fetch the object!
             if object_id:
-                self.respond(payload={'_data': self.entity_service.get(object_id=object_id), '_id': object_id})
-                return
+                return self.respond(payload={'_data': self.entity_service.get(object_id=object_id), '_id': object_id})
 
             # No object id? Ok, we'll continue with search/fetch_all
             query = self.get_argument('q', default=None)
             if query:
-                self.respond(payload=self.search_service.search(query))
-                return
+                return self.respond(payload=self.search_service.search(query))
 
             # No object id & no 'q'? Then, it's a regular GET ALL!
             self.respond(payload=self.entity_service.get_all())
@@ -118,15 +114,14 @@ class SimpleEntityHandler(BaseHandler):
         """
             Stores a new blog post into Riak
         """
-        # Check the headers
         if self.require_headers(require_content_type=True) == 1:
             return
 
         # Generate a unique ID for the Riak object
         object_id = uuid.uuid1().hex
         logging.debug("created new object id: {}".format(object_id))
+
         try:
-            # Load the JSON to see it's valid.
             obj_to_store = json.loads(tornado.escape.utf8(self.request.body), 'utf-8')
 
             # Check for illegal attributes (reserved words)
@@ -137,12 +132,11 @@ class SimpleEntityHandler(BaseHandler):
                 )
                 return
 
-            # add time stamps
             obj_to_store['_createdAt'] = obj_to_store['_updatedAt'] = get_current_time_formatted()
 
-            # Check if this post is valid
             result = self.entity_service.post(object_id=object_id, data=obj_to_store)
             self.respond(status_code=201, payload={"_id": result._key, "_data": result.get_data()})
+
         except ValueError, e:
             logging.error('Cannot convert JSON object. Error: {}'.format(e))
             self.write_error(500, message='Cannot convert JSON object!')

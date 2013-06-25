@@ -23,10 +23,10 @@ import tornado.httputil
 import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
+from simple_entity.api_status_handler import ApiStatusHandler
 from simple_entity.genapi_support import get_bucket_name
-from simple_entity.base_handlers import ApiStatusHandler
-from settings.config import APP_SETTINGS
-from simple_entity.entity_handlers import SimpleEntityHandler
+from settings.config import TORNADO_APP_SETTINGS
+from simple_entity.simple_entity_handler import SimpleEntityHandler
 from simple_entity.pre_hooks import pre_start_hook
 
 
@@ -74,6 +74,7 @@ def routes(parsed_opts):
     """
     assert parsed_opts.api_version
     assert parsed_opts.api_id
+    assert parsed_opts.api_key
     assert parsed_opts.entity
     assert parsed_opts.riak_rq
     assert parsed_opts.riak_wq
@@ -104,34 +105,12 @@ def routes(parsed_opts):
         )
 
         # Setup route for retrieving all objects
-        all_routes.append((
-            #            r"/v{}/{}".format(parsed_opts.api_version, entity),
-            r"/{}".format(entity),
-            SimpleEntityHandler,
-            options_dict
-        ))
-
-        all_routes.append((
-            #            r"/v{}/{}".format(parsed_opts.api_version, entity),
-            r"/{}.json".format(entity),
-            SimpleEntityHandler,
-            options_dict
-        ))
+        all_routes.append((r"/{}".format(entity), SimpleEntityHandler, options_dict))
+        all_routes.append((r"/{}.json".format(entity), SimpleEntityHandler, options_dict))
 
         # Setup route for getting single objects with given id
-        all_routes.append((
-            #            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
-            r"/{}/([0-9a-zA-Z]+)".format(entity),
-            SimpleEntityHandler,
-            options_dict
-        ))
-
-        all_routes.append((
-            #            r"/v{}/{}/([0-9a-zA-Z]+)".format(parsed_opts.api_version, entity),
-            r"/{}/([0-9a-zA-Z]+).json".format(entity),
-            SimpleEntityHandler,
-            options_dict
-        ))
+        all_routes.append((r"/{}/([0-9a-zA-Z]+)".format(entity), SimpleEntityHandler, options_dict))
+        all_routes.append((r"/{}/([0-9a-zA-Z]+).json".format(entity), SimpleEntityHandler, options_dict))
 
     return all_routes
 
@@ -158,6 +137,10 @@ def options_ok(parsed_opts):
         ok = False
         logging.error('Missing attribute: --api_version')
 
+    if parsed_opts.api_key is None:
+        ok = False
+        logging.error('Missing attribute: --api_key')
+
     if parsed_opts.entity is None or len(parsed_opts.entity) == 0:
         ok = False
         logging.error('Missing attribute: --entity')
@@ -177,7 +160,7 @@ def _start_tornado_server(port, routes_configuration):
     # Setup the application context
     application = tornado.web.Application(
         handlers=routes_configuration,
-        **APP_SETTINGS
+        **TORNADO_APP_SETTINGS
     )
 
     # Setup the HTTP server

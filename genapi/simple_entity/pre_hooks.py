@@ -25,7 +25,6 @@ def store_init_object(opts, entity_name):
     assert opts.riak_rq
     assert opts.riak_wq
 
-    # Riak HTTP client
     client = riak.RiakClient(
         host=opts.riak_host,
         port=opts.riak_http_port,
@@ -132,10 +131,10 @@ def database_base_http_url(db_host, db_port):
         Careful: This is using HTTP, not HTTPS as protocol.
     """
     # We are using HTTP, not HTTPS!
-    riak_protocol = 'http://'
+    riak_protocol = 'http'
 
     # Construct the whole URL and return it back
-    return '{protocol}{node}:{port}'.format(protocol=riak_protocol, node=db_host, port=db_port)
+    return '{protocol}://{node}:{port}'.format(protocol=riak_protocol, node=db_host, port=db_port)
 
 
 def database_bucket_url(db_host, db_port, bucket_name):

@@ -7,21 +7,17 @@
 
 """
 
-# Application details
 APP_DETAILS = {
     'name': 'PyGenAPI',
-    'version': '0.5.2',
+    'version': '0.5.3.4',
     'company': 'apitrary',
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
     'copyright': '2012 apitrary.com',
 }
 
-# Cookie secret
-COOKIE_SECRET = 'Pa1eevenie-di4koGheiKe7ki_inoo2quiu0Xohhaquei4thuv'
-
-# General app settings for Tornado
-APP_SETTINGS = {
+COOKIE_SECRET = 'Pa1eevenie-di4koGheiKe7ki_inoo2quiu0Xohhaquei4thuv98hs9dfb9*B(FBS(FB9sdbvs9dbv'
+TORNADO_APP_SETTINGS = {
     'cookie_secret': COOKIE_SECRET,
     'xheaders': True
 }
@@ -29,14 +25,6 @@ APP_SETTINGS = {
 GOOGLE_ANALYTICS = {
     'STAGING': "MO-28942332-9",         # STAGING ENVIRONMENT GA
     'LIVE': "MO-28942332-3"             # LIVE ENVIRONMENT GA
-}
-
-PIWIK = {
-    'STAGING' : {
-        'HOST': 'app1.dev.apitrary.net',
-        'SITE_ID': '3',
-        'REC': '1'
-    }
 }
 
 ZMQ = {

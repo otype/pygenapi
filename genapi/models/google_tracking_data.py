@@ -10,10 +10,11 @@
 """
 import json
 
+
 class GoogleTrackingData(object):
     """
         A tracking data object which can be used to send the tracking information from a given
-        request to Google Analytics (or Piwik).
+        request to Google Analytics.
     """
 
     def __init__(self, request, user_agent, api_id, api_version, env, entity_name):

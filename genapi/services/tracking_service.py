@@ -10,9 +10,10 @@
 """
 from services.trackr_service import TrackrService
 
+
 class TrackingService(object):
     """
-        Provide calls for sending tracking data to Google Analytics, Piwik, etc.
+        Provide calls for sending tracking data to Google Analytics, etc.
     """
 
     def send_data_to_trackr(self, tracking_data):

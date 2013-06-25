@@ -1,8 +1,7 @@
-distribute==0.6.36
 protobuf==2.4.1
 pycurl==7.19.0
-pyzmq==13.0.2
+pyzmq==13.1.0
 riak==1.5.2
 riak-pb==1.2.1
-tornado==3.0.1
+tornado==3.1
 uuid==1.30
