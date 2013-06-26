@@ -9,9 +9,9 @@
 
 """
 import logging
-from errors import RiakObjectIdNotProvidedException, RiakObjectNotFoundException
-from repositories.riak_entity_repository import RiakEntityRepository
-from services.base_service import BaseService
+from genapi.errors import RiakObjectIdNotProvidedException, RiakObjectNotFoundException
+from genapi.repositories.riak_entity_repository import RiakEntityRepository
+from genapi.services.base_service import BaseService
 
 
 class EntityService(BaseService):

@@ -15,7 +15,7 @@ import tornado
 import tornado.ioloop
 from _socket import gaierror
 from tornado.httpclient import AsyncHTTPClient
-from simple_entity.handler_helpers import get_bucket_name
+from genapi.simple_entity.handler_helpers import get_bucket_name
 
 
 def store_init_object(opts, entity_name):

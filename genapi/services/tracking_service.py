@@ -8,7 +8,7 @@
     Copyright (c) 2012 apitrary
 
 """
-from services.trackr_service import TrackrService
+from genapi.services.trackr_service import TrackrService
 
 
 class TrackingService(object):

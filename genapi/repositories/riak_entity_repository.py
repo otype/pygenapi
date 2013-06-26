@@ -10,8 +10,8 @@
 """
 import logging
 import riak
-from errors import RiakObjectNotFoundException
-from errors import RiakObjectIdNotProvidedException
+from genapi.errors import RiakObjectNotFoundException
+from genapi.errors import RiakObjectIdNotProvidedException
 
 
 class RiakEntityRepository(object):

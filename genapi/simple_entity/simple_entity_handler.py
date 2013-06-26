@@ -18,15 +18,15 @@ import logging
 import uuid
 import tornado
 from tornado import escape
-from services.entity_service import EntityService
-from services.search_service import SearchService
-from simple_entity.base_handlers import BaseHandler
-from simple_entity.handler_helpers import validate_user_agent
-from simple_entity.handler_helpers import get_current_time_formatted
-from simple_entity.handler_helpers import illegal_attributes_exist
-from simple_entity.handler_helpers import filter_out_timestamps
-from google_tracking_data import GoogleTrackingData
-from services.tracking_service import TrackingService
+from genapi.services.entity_service import EntityService
+from genapi.services.search_service import SearchService
+from genapi.simple_entity.base_handlers import BaseHandler
+from genapi.simple_entity.handler_helpers import validate_user_agent
+from genapi.simple_entity.handler_helpers import get_current_time_formatted
+from genapi.simple_entity.handler_helpers import illegal_attributes_exist
+from genapi.simple_entity.handler_helpers import filter_out_timestamps
+from genapi.google_tracking_data import GoogleTrackingData
+from genapi.services.tracking_service import TrackingService
 
 
 class SimpleEntityHandler(BaseHandler):

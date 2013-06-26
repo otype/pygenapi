@@ -9,7 +9,7 @@
 
 """
 import logging
-from services.base_service import BaseService
+from genapi.services.base_service import BaseService
 
 
 class SearchService(BaseService):
