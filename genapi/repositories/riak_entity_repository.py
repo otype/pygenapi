@@ -38,14 +38,12 @@ class RiakEntityRepository(object):
             logging.error('No object ID provided! Object ID required.')
             raise RiakObjectIdNotProvidedException()
 
-        # Fetch the data from the Riak bucket
         single_object = self.bucket.get(object_id).get_data()
-        logging.debug('Object with ID {} fetched.'.format(object_id))
-
-        # No object retrieved? Key must be invalid.
         if single_object is None:
             logging.error('Object with given id={} not found!'.format(object_id))
             raise RiakObjectNotFoundException()
+        else:
+            single_object = self.bucket.get(object_id).get_data()
 
         return single_object
 
