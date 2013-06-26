@@ -5,3 +5,4 @@ riak==1.5.2
 riak-pb==1.2.1
 tornado==3.1
 uuid==1.30
+pygenapi==0.5.3.8
