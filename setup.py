@@ -41,8 +41,8 @@ setup(
     maintainer=config.APP_DETAILS['company'],
     maintainer_email=config.APP_DETAILS['support'],
     url='https://github.com/apitrary/pygenapi',
-    packages=find_packages('genapi'),
-    package_dir={'': 'genapi'},
+    packages=find_packages('.'),
+    package_dir={'': '.'},
     scripts=[
         'genapi/genapi_runner.py'
     ],
