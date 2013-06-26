@@ -96,7 +96,12 @@ class SimpleEntityHandler(BaseHandler):
         try:
             # Object ID available? Then fetch the object!
             if object_id:
-                self.respond(payload={'_data': self.entity_service.get_single(object_id=object_id), '_id': object_id})
+                obj = self.entity_service.get_single(object_id=object_id)
+                if obj is None:
+                    self.respond(payload={'_data': self.entity_service.get_single(object_id=object_id), '_id': object_id})
+                    self.write_error(404, 'Object with given id {} was not found.'.format(object_id))
+                else:
+                    self.respond(payload={'_data': self.entity_service.get_single(object_id=object_id), '_id': object_id})
                 return
 
                 # No object id? Ok, we'll continue with search/fetch_all
@@ -163,7 +168,10 @@ class SimpleEntityHandler(BaseHandler):
         # First, try to get the object (check if it exists)
         db_object = self.entity_service.get_single(object_id)
         if db_object is None:
-            self.write_error(404, message='Cannot update object: object with given id does not exist!')
+            self.write_error(
+                404,
+                message='Cannot update object: object with given id {} does not exist!'.format(object_id)
+            )
             return
 
         try:
