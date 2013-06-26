@@ -12,7 +12,7 @@ import tornado.escape
 from tornado import gen
 import tornado.httpserver
 import tornado.httputil
-from config import APP_DETAILS
+from genapi.config import APP_DETAILS
 from simple_entity.base_handlers import BaseHandler
 
 
