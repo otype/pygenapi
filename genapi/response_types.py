@@ -9,6 +9,7 @@
 
 """
 import json
+from genapi.simple_entity.handler_helpers import get_current_time_formatted
 
 
 class Response(object):

@@ -9,7 +9,7 @@
 
 APP_DETAILS = {
     'name': 'PyGenAPI',
-    'version': '0.5.4',
+    'version': '0.5.4.1',
     'company': 'apitrary',
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
