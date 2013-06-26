@@ -12,7 +12,11 @@ import logging
 
 import zmq
 
-from config import ZMQ
+
+ZMQ = {
+    'TRACKR_CONNECT_ADDRESS': "tcp://localhost:5555",  # ZMQ_SERVER is running locally (for now).
+    'TRACKR_BIND_ADDRESS': "tcp://*:5555"   # ZMQ_SERVER is running locally (for now).
+}
 
 
 class TrackrService(object):
