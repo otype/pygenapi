@@ -8,11 +8,15 @@
     Copyright (c) 2012 apitrary
 
 """
+import zmq
 import json
 import logging
-import zmq
-from config import ZMQ
 from tracking.google_tracking import send_analytics_data
+
+ZMQ = {
+    'TRACKR_CONNECT_ADDRESS': "tcp://localhost:5555",  # ZMQ_SERVER is running locally (for now).
+    'TRACKR_BIND_ADDRESS': "tcp://*:5555"   # ZMQ_SERVER is running locally (for now).
+}
 
 # Establish ZMQ context
 context = zmq.Context()

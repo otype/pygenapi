@@ -9,7 +9,7 @@
 
 APP_DETAILS = {
     'name': 'PyGenAPI',
-    'version': '0.5.3.8',
+    'version': '0.5.3.9',
     'company': 'apitrary',
     'support': 'http://apitrary.com/support',
     'contact': 'support@apitrary.com',
@@ -25,11 +25,6 @@ TORNADO_APP_SETTINGS = {
 GOOGLE_ANALYTICS = {
     'STAGING': "MO-28942332-9",         # STAGING ENVIRONMENT GA
     'LIVE': "MO-28942332-3"             # LIVE ENVIRONMENT GA
-}
-
-ZMQ = {
-    'TRACKR_CONNECT_ADDRESS': "tcp://localhost:5555",  # ZMQ_SERVER is running locally (for now).
-    'TRACKR_BIND_ADDRESS': "tcp://*:5555"   # ZMQ_SERVER is running locally (for now).
 }
 
 ILLEGAL_ATTRIBUTES_SET = ['_createdAt', '_updatedAt', '_init']
