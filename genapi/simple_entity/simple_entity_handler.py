@@ -98,7 +98,7 @@ class SimpleEntityHandler(BaseHandler):
             if object_id:
                 obj = self.entity_service.get_single(object_id=object_id)
                 if obj is None:
-                    self.write_error(404, 'Object with given id {} was not found.'.format(object_id))
+                    self.write_error(404, message='Object with given id {} was not found.'.format(object_id))
                 else:
                     self.respond(payload={'_data': self.entity_service.get_single(object_id=object_id), '_id': object_id})
                 return
