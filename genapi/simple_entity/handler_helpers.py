@@ -82,3 +82,10 @@ def validate_user_agent(request):
         return 'UNKNOWN'
     else:
         return request.headers['User-Agent']
+
+
+def get_bucket_name(api_id, entity_name):
+    """
+        To create uniform bucket names
+    """
+    return '{}_{}'.format(api_id, entity_name)

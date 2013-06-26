@@ -24,7 +24,7 @@ import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
 from simple_entity.api_status_handler import ApiStatusHandler
-from simple_entity.genapi_support import get_bucket_name
+from simple_entity.handler_helpers import get_bucket_name
 from config import TORNADO_APP_SETTINGS
 from simple_entity.simple_entity_handler import SimpleEntityHandler
 from simple_entity.pre_hooks import pre_start_hook

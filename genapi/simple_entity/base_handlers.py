@@ -17,8 +17,8 @@ import tornado.httpserver
 import tornado.httputil
 from tornado.options import options
 from errors import NoDictionaryException
-from error_response import ErrorResponse
-from response import Response
+from response_types import ErrorResponse
+from response_types import Response
 
 
 class BaseHandler(tornado.web.RequestHandler):

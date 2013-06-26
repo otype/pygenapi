@@ -25,7 +25,7 @@ from simple_entity.handler_helpers import validate_user_agent
 from simple_entity.handler_helpers import get_current_time_formatted
 from simple_entity.handler_helpers import illegal_attributes_exist
 from simple_entity.handler_helpers import filter_out_timestamps
-from tracking.google_tracking_data import GoogleTrackingData
+from google_tracking_data import GoogleTrackingData
 from services.tracking_service import TrackingService
 
 

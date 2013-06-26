@@ -9,6 +9,8 @@
     Copyright (c) 2012 apitrary
 
 """
+from genapi import config
+
 try:
     from setuptools import setup
     from setuptools import find_packages
@@ -30,21 +32,20 @@ def read_requirements():
 
 
 setup(
-    name='pygenapi',
-    version='0.5.3.9',
+    name=config.APP_DETAILS['name'],
+    version=config.APP_DETAILS['version'],
     description='Python Generated API for apitrary',
     long_description='pygenapi is apitrary\'s generated REST API project',
     author='Hans-Gunther Schmidt',
     author_email='hgs@apitrary.com',
-    maintainer='apitrary',
-    maintainer_email='official@apitrary.com',
+    maintainer=config.APP_DETAILS['company'],
+    maintainer_email=config.APP_DETAILS['support'],
     url='https://github.com/apitrary/pygenapi',
     packages=find_packages('genapi'),
     package_dir={'': 'genapi'},
     scripts=[
-        'genapi/genapi_runner.py',
-        'genapi/trackr.py'
+        'genapi/genapi_runner.py'
     ],
-    license='copyright by apitrary',
+    license=config.APP_DETAILS['copyright'],
     install_requires=read_requirements()
 )
