@@ -23,11 +23,6 @@ import tornado.httputil
 import tornado.httpclient
 from tornado.options import options
 from tornado.options import define
-from genapi.simple_entity.api_status_handler import ApiStatusHandler
-from genapi.simple_entity.handler_helpers import get_bucket_name
-from genapi.config import TORNADO_APP_SETTINGS
-from genapi.simple_entity.simple_entity_handler import SimpleEntityHandler
-from genapi.simple_entity.pre_hooks import pre_start_hook
 
 
 ##############################################################################
@@ -37,6 +32,12 @@ from genapi.simple_entity.pre_hooks import pre_start_hook
 ##############################################################################
 
 # Required shell parameters
+from tornadoriak.api_status_handler import ApiStatusHandler
+from tornadoriak.handler_helpers import get_bucket_name
+from tornadoriak.pre_hooks import pre_start_hook
+from genapi.config import TORNADO_APP_SETTINGS
+from genapi.simple_entity_handler import SimpleEntityHandler
+
 define("port", help="run on the given port", type=int)
 define("riak_host", help="Riak database host", type=str)
 define("api_version", help="API Version (/vXXX)", type=int)
