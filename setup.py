@@ -9,6 +9,8 @@
     Copyright (c) 2012 apitrary
 
 """
+from genapi.genapi_runner import APP_DETAILS
+
 try:
     from setuptools import setup
     from setuptools import find_packages
@@ -30,8 +32,8 @@ def read_requirements():
 
 
 setup(
-    name='PyGenAPI',
-    version='0.6.1',
+    name=APP_DETAILS['name'],
+    version=APP_DETAILS['version'],
     description='Python Generated API for apitrary',
     long_description='pygenapi is apitrary\'s generated REST API project',
     author='Hans-Gunther Schmidt',

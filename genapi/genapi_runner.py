@@ -21,7 +21,7 @@ import tornado.httpserver
 import tornado.httputil
 import tornado.httpclient
 from tornadoriak.api_status_handler import ApiStatusHandler
-from tornadoriak.config import TORNADO_APP_SETTINGS, APP_DETAILS
+from tornadoriak.config import TORNADO_APP_SETTINGS
 from tornadoriak.handler_helpers import get_bucket_name
 from tornado.options import define
 from tornado.log import enable_pretty_logging
@@ -35,6 +35,19 @@ from genapi.simple_entity_handler import SimpleEntityHandler
 # GENERAL CONFIGURATION + SHELL PARAMETER DEFINITIONS
 #
 ##############################################################################
+
+# Cookie secret
+COOKIE_SECRET = 'oe1aux0oa5ooCh&oo.qu6lie4wei2XiuXieM1eifooth3ai>goosugh3ees;ah"kiephahc7aghaerooGh2Xaa%zie:haepho'
+
+# APP details shown in status resource
+APP_DETAILS = {
+    'name': 'PyGenAPI',
+    'version': '0.6.1',
+    'company': 'apitrary',
+    'support': 'http://apitrary.com/support',
+    'contact': 'support@apitrary.com',
+    'copyright': '(c) 2012 - 2013 apitrary.com',
+}
 
 # Required shell parameters
 define("port", help="run on the given port", type=int)
@@ -59,10 +72,6 @@ PORT = options.port
 
 # Enable pretty logging
 enable_pretty_logging()
-
-# Cookie secret
-COOKIE_SECRET = 'oe1aux0oa5ooCh&oo.qu6lie4wei2XiuXieM1eifooth3ai>goosugh3ees;ah"kiephahc7aghaerooGh2Xaa%zie:haepho'
-
 
 ##############################################################################
 #
