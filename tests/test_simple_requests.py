@@ -9,10 +9,11 @@
 
 """
 import json
-from time import sleep
 import tornado
+from time import sleep
 from tornado import httpclient
 from tornado.httpclient import HTTPError
+
 
 class TestSimpleEntity(object):
     def __init__(self):
@@ -39,7 +40,9 @@ class TestSimpleEntity(object):
             body=json.dumps({'a_key': 'a_value'}),
             headers={'Accept': 'application/json'}
         )
-        sleep(1.0) # give time to settle
+        # give time to settle
+        sleep(1.0)
+
         resp = json.loads(response.body)
         self.db_key = resp['result']['_id']
         assert self.db_key != ''
