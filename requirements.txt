@@ -1,4 +1,4 @@
-Tornado-Riak==0.1.5
+Tornado-Riak==0.1.6
 protobuf==2.4.1
 pycurl==7.19.0
 pyzmq==13.1.0
